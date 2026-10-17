@@ -30,7 +30,7 @@ The included Caddy proxy requests and renews certificates. MySQL has no public p
 
 `database` stores MySQL data and `uploads` stores profile images and library PDFs. Named volumes survive ordinary container recreation and `docker compose down`. Do not use `down -v` on a system whose data you need.
 
-The schema runs only when the MySQL volume is empty. This package does not import your current local database or uploaded files. To preserve existing school records, back them up and plan a separate import before switching systems. Historical database migrations remain in the development repository and are not included in the fresh-install submission archive.
+The schema runs only when the MySQL volume is empty. This package does not import your current local database or uploaded files. To preserve existing school records, back them up and plan a separate import before switching systems. Legacy database migration scripts have been removed from the repository. Existing database upgrades require a separately reviewed migration and import plan.
 
 Keep private `.env` settings with your backup. Database and upload backups must be stored off the server and restored on a disposable environment to verify them. Stop writes during coordinated backups; database and file backups must represent the same point in time. Avoid changing database passwords in `.env` after initial setup without rotating the corresponding MySQL accounts too.
 
