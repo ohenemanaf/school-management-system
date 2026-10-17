@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import api from '../../utils/api';
+import api, { fileUrl } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { IconBooks, IconBook, IconPlus, IconUserCheck, IconArrowBackUp, IconSearch, IconX, IconCheck } from '@tabler/icons-react';
 
@@ -274,7 +274,7 @@ const LibraryDashboard = () => {
                                             <td className="p-4">
                                                 {book.pdf_url && (
                                                     <a 
-                                                        href={`http://localhost:5000${book.pdf_url}`} 
+                                                        href={fileUrl(book.pdf_url)}
                                                         target="_blank" 
                                                         rel="noopener noreferrer"
                                                         className="text-xs font-semibold bg-primary-50 text-primary-600 px-3 py-1.5 rounded-lg hover:bg-primary-100 transition-colors inline-block"

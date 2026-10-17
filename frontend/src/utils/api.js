@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+    baseURL: import.meta.env.VITE_API_URL || '/api',
 });
 
 api.interceptors.request.use((config) => {
@@ -22,5 +22,13 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+// Uploaded files share the API origin, including when hosted behind HTTPS.
+export const fileUrl = (value) => {
+    if (!value) return '';
+    if (/^https?:\/\//i.test(value)) return value;
+    const origin = new URL(api.defaults.baseURL, window.location.origin).origin;
+    return new URL(value.startsWith('/') ? value : `/${value}`, origin).href;
+};
 
 export default api;

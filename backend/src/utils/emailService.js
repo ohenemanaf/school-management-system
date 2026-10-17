@@ -20,6 +20,8 @@ class EmailService {
                     }
                 });
                 console.log('Using real SMTP configuration');
+            } else if (process.env.NODE_ENV === 'production') {
+                console.log('Email delivery is disabled until SMTP settings are configured.');
             } else {
                 // Use Ethereal for testing if no config is found
                 const testAccount = await nodemailer.createTestAccount();

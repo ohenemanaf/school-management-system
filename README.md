@@ -2,6 +2,10 @@
 
 A role-based school administration app built with React, Vite and Tailwind CSS, backed by Express and MySQL. Includes student and lecturer management, programs, courses, groups, rooms, timetables, attendance, grades, materials, finance, library and notifications.
 
+## Simple deployment
+
+For a submission package and fresh installation, follow [DEPLOYMENT.md](DEPLOYMENT.md). Docker Compose builds the app, initializes MySQL, creates the first super administrator and preserves uploaded files.
+
 ## Requirements
 
 - Node.js 22.12 or newer (a supported LTS release is recommended)
@@ -16,7 +20,7 @@ A role-based school administration app built with React, Vite and Tailwind CSS, 
 4. Run `npm run dev` in `backend` (default: http://localhost:5000). The health endpoint is `/api/health`.
 5. In `frontend`, run `npm ci`, copy `.env.example` to `.env`, and run `npm run dev`. Open the local URL printed by Vite (normally http://localhost:5173).
 
-The frontend reads `VITE_API_URL`, defaulting to `http://localhost:5000/api`. SMTP configuration is optional for local development; the existing backend attempts to create an Ethereal test mail account if SMTP is unset.
+The frontend reads `VITE_API_URL`, defaulting to `/api`. Vite proxies local API and upload requests to port 5000; the deployed app serves both from the same origin. SMTP configuration is optional for local development; the existing backend attempts to create an Ethereal test mail account if SMTP is unset.
 
 ## Checks
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
-import api from '../../utils/api';
+import api, { fileUrl } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { IconSchool, IconBooks, IconChartBar, IconCalendarTime, IconReportAnalytics, IconArrowRight, IconId, IconMail, IconFileInvoice, IconDownload, IconCash } from '@tabler/icons-react';
 
@@ -74,7 +74,7 @@ const StudentDashboard = () => {
     // Calculate avatar URL fallback if not uploaded
     const getAvatarUrl = () => {
         if (user?.profileImageUrl) {
-            return user.profileImageUrl.startsWith('http') ? user.profileImageUrl : `http://localhost:5000${user.profileImageUrl}`;
+            return fileUrl(user.profileImageUrl);
         }
         const gender = user?.gender?.toLowerCase() === 'female' ? 'girl' : 'boy';
         const nameParam = user?.name ? user.name.replace(' ', '+') : 'Student';
@@ -241,7 +241,7 @@ const StudentDashboard = () => {
                                             </div>
                                             {item.pdf_url ? (
                                                 <a 
-                                                    href={`http://localhost:5000${item.pdf_url}`}
+                                                    href={fileUrl(item.pdf_url)}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-200 transition-colors shrink-0"

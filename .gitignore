@@ -121,3 +121,8 @@ backend/public/uploads/**
 # Local-only demo reset utility
 /backend/seed_mock_data.js
 /CLEANUP.md
+
+# Submission archives and generated backup files
+artifacts/
+*.zip
+*.sql.gz

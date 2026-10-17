@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import api from '../../utils/api';
+import api, { fileUrl } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { IconSearch, IconPlus, IconEdit, IconTrash, IconSchool, IconX, IconUpload, IconFileSpreadsheet } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
@@ -409,7 +409,7 @@ const StudentList = () => {
                                     <tr key={student.id} className="hover:bg-primary-50/30 transition-colors">
                                         <td className="px-6 py-4 flex items-center gap-3 min-w-0">
                                             <img 
-                                                src={student.profile_image_url ? (student.profile_image_url.startsWith('http') ? student.profile_image_url : `http://localhost:5000${student.profile_image_url}`) : `https://avatar.iran.liara.run/public/${student.gender?.toLowerCase() === 'female' ? 'girl' : 'boy'}?username=${student.first_name}+${student.last_name}`}
+                                                src={student.profile_image_url ? fileUrl(student.profile_image_url) : `https://avatar.iran.liara.run/public/${student.gender?.toLowerCase() === 'female' ? 'girl' : 'boy'}?username=${student.first_name}+${student.last_name}`}
                                                 alt="" 
                                                 className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 object-cover shrink-0"
                                             />
@@ -459,7 +459,7 @@ const StudentList = () => {
                             <div key={student.id} className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700/50">
                                 <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-700/50 pb-3 mb-3 min-w-0">
                                     <img 
-                                        src={student.profile_image_url ? (student.profile_image_url.startsWith('http') ? student.profile_image_url : `http://localhost:5000${student.profile_image_url}`) : `https://avatar.iran.liara.run/public/${student.gender?.toLowerCase() === 'female' ? 'girl' : 'boy'}?username=${student.first_name}+${student.last_name}`}
+                                        src={student.profile_image_url ? fileUrl(student.profile_image_url) : `https://avatar.iran.liara.run/public/${student.gender?.toLowerCase() === 'female' ? 'girl' : 'boy'}?username=${student.first_name}+${student.last_name}`}
                                         alt="" 
                                         className="w-10 h-10 rounded-full shrink-0 bg-slate-100 dark:bg-slate-800 object-cover" 
                                     />

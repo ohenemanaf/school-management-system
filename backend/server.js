@@ -21,7 +21,17 @@ const errorHandler = require('./src/core/middlewares/error.middleware');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-app.use(cors());
+app.disable('x-powered-by');
+if (process.env.TRUST_PROXY === '1') app.set('trust proxy', 1);
+// Production uses one origin. Cross-origin development is opt-in.
+if (process.env.CORS_ORIGIN) {
+    app.use(cors({ origin: process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()) }));
+}
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+});
 app.use(express.json());
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
@@ -49,9 +59,39 @@ app.get('/api/health', (req, res) => {
 });
 
 
+// Readiness checks include the database; liveness above remains lightweight.
+app.get('/api/ready', async (req, res) => {
+    try {
+        await require('./src/config/db').query('SELECT 1');
+        res.json({ status: 'ready' });
+    } catch {
+        res.status(503).json({ status: 'unavailable' });
+    }
+});
+app.use('/api', (req, res) => res.status(404).json({ message: 'API route not found' }));
+
+const frontendDir = path.join(__dirname, '../frontend/dist');
+if (require('fs').existsSync(path.join(frontendDir, 'index.html'))) {
+    app.use(express.static(frontendDir));
+    // Express 5 requires a named wildcard, including the root route.
+    app.get('/{*path}', (req, res, next) => {
+        if (req.path.startsWith('/uploads/') || !req.accepts('html')) return next();
+        res.sendFile(path.join(frontendDir, 'index.html'));
+    });
+}
+
 // Global Error Handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`);
 });
+const shutdown = () => {
+    server.close(async () => {
+        await require('./src/config/db').end();
+        process.exit(0);
+    });
+    setTimeout(() => process.exit(1), 10000).unref();
+};
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
