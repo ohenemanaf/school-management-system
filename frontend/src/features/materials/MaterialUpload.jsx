@@ -64,27 +64,27 @@ const MaterialUpload = () => {
     const isStudent = user?.role === 'STUDENT';
 
     return (
-        <div className="p-4 md:p-6 lg:p-10 w-full overflow-hidden box-border">
+        <div className="page w-full  box-border">
             <div className="mb-6 md:mb-8">
-                <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Learning Materials</h1>
+                <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">Learning Materials</h1>
                 <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">Access and distribute course content.</p>
             </div>
 
             {!isStudent && (
                 <div className="glass p-6 rounded-2xl md:rounded-3xl shadow-sm mb-8">
-                    <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4">Upload Content</h2>
+                    <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Upload Content</h2>
                     <form onSubmit={handleUpload} className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <select required value={form.studentGroupId} onChange={e => setForm({...form, studentGroupId: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-bold text-slate-700 dark:text-slate-200">
+                        <select required value={form.studentGroupId} onChange={e => setForm({...form, studentGroupId: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200">
                             <option value="">Select Group</option>
                             {studentGroupsList.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                         </select>
-                        <select required disabled={user?.role === 'LECTURER'} value={form.lecturerId} onChange={e => setForm({...form, lecturerId: e.target.value})} className={`px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-bold text-slate-700 dark:text-slate-200 ${user?.role === 'LECTURER' ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                        <select required disabled={user?.role === 'LECTURER'} value={form.lecturerId} onChange={e => setForm({...form, lecturerId: e.target.value})} className={`px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200 ${user?.role === 'LECTURER' ? 'opacity-50 cursor-not-allowed' : ''}`}>
                             <option value="">Select Lecturer</option>
                             {lecturersList.map(t => <option key={t.id} value={t.id}>{t.email.split('@')[0]} ({t.department})</option>)}
                         </select>
-                        <input type="text" placeholder="Material Title" required value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-bold text-slate-700 dark:text-slate-200" />
-                        <input type="url" placeholder="File URL Link" required value={form.fileUrl} onChange={e => setForm({...form, fileUrl: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-bold text-slate-700 dark:text-slate-200" />
-                        <button type="submit" className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-3 rounded-xl font-bold transition-colors">Upload</button>
+                        <input type="text" placeholder="Material Title" required value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200" />
+                        <input type="url" placeholder="File URL Link" required value={form.fileUrl} onChange={e => setForm({...form, fileUrl: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200" />
+                        <button type="submit" className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-3 rounded-xl font-semibold transition-colors">Upload</button>
                     </form>
                 </div>
             )}
@@ -96,14 +96,14 @@ const MaterialUpload = () => {
                     <div className="col-span-full text-center py-8 text-slate-400">No learning materials found.</div>
                 ) : (
                     materials.map(mat => (
-                        <div key={mat.id} className="glass p-5 rounded-2xl shadow-sm flex flex-col justify-between h-48 border border-white dark:border-slate-700/50/60">
-                            <div>
-                                <h3 className="font-extrabold text-lg text-slate-800 dark:text-slate-100 line-clamp-2">{mat.title}</h3>
-                                <p className="text-sm font-bold text-primary-600 mt-1">{mat.student_group_name}</p>
+                        <div key={mat.id} className="glass p-5 rounded-2xl shadow-sm flex flex-col justify-between min-h-48 border border-slate-200/60 dark:border-slate-700/60 min-w-0 overflow-hidden">
+                            <div className="min-w-0">
+                                <h3 className="font-semibold text-base md:text-lg text-slate-800 dark:text-slate-100 line-clamp-2 break-words" title={mat.title}>{mat.title}</h3>
+                                <p className="text-sm font-semibold text-primary-600 dark:text-primary-400 mt-1 truncate" title={mat.student_group_name}>{mat.student_group_name}</p>
                             </div>
-                            <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
-                                <span className="text-xs font-semibold text-slate-400">{new Date(mat.created_at).toLocaleDateString()}</span>
-                                <a href={mat.file_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-primary-600 bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 px-3 py-1.5 rounded-lg transition-colors">
+                            <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50 min-w-0">
+                                <span className="text-xs font-semibold text-slate-400 shrink-0">{new Date(mat.created_at).toLocaleDateString()}</span>
+                                <a href={mat.file_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-primary-600 bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 px-3 py-1.5 rounded-lg transition-colors shrink-0">
                                     <IconDownload size={16} />
                                     Open
                                 </a>

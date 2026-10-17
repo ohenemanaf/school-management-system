@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import api from '../../utils/api';
-import toast from 'react-hot-toast';
 import { IconShieldCheck, IconLogout } from '@tabler/icons-react';
 
 const GatekeeperDashboard = () => {
@@ -10,9 +9,7 @@ const GatekeeperDashboard = () => {
     const [token, setToken] = useState('...');
     const [loading, setLoading] = useState(true);
 
-    if (user?.role !== 'GATEKEEPER' && user?.role !== 'ADMIN') {
-        return <Navigate to="/admin" replace />;
-    }
+    const canAccess = user?.role === 'GATEKEEPER' || user?.role === 'ADMIN';
 
     const fetchToken = async () => {
         try {
@@ -26,11 +23,14 @@ const GatekeeperDashboard = () => {
     };
 
     useEffect(() => {
+        if (!canAccess) return;
         fetchToken();
         // Poll every 5 seconds to get a new token if the old one is consumed or expired
         const interval = setInterval(fetchToken, 5000);
         return () => clearInterval(interval);
-    }, []);
+    }, [canAccess]);
+
+    if (!canAccess) return <Navigate to="/admin" replace />;
 
     return (
         <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center relative overflow-hidden">

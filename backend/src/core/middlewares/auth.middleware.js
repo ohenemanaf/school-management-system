@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { secret: jwtSecret } = require('../../config/jwt');
 
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -6,7 +7,7 @@ const authenticateToken = (req, res, next) => {
 
     if (!token) return res.status(401).json({ message: 'Access denied. No token provided.' });
 
-    jwt.verify(token, process.env.JWT_SECRET || 'supersecretjwtkey_please_change_in_production', (err, user) => {
+    jwt.verify(token, jwtSecret, (err, user) => {
         if (err) return res.status(403).json({ message: 'Invalid token.' });
         req.user = user;
         next();

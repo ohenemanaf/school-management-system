@@ -68,7 +68,7 @@ function App() {
               <Route path="grades" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER']}><Gradebook /></RequireRole>} />
               <Route path="materials" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER', 'STUDENT']}><MaterialUpload /></RequireRole>} />
               <Route path="students" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER', 'ACCOUNTANT']}><StudentList /></RequireRole>} />
-              <Route path="users" element={<RequireRole allowedRoles={['SUPER_ADMIN']}><UserList /></RequireRole>} />
+              <Route path="users" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN']}><UserList /></RequireRole>} />
               <Route path="lecturers" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN']}><LecturerList /></RequireRole>} />
               <Route path="courses" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN']}><CourseList /></RequireRole>} />
               <Route path="programs" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN']}><ProgramList /></RequireRole>} />
@@ -77,8 +77,8 @@ function App() {
               <Route path="settings" element={<Settings />} />
               <Route path="broadcast" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT']}><BroadcastCenter /></RequireRole>} />
               <Route path="results" element={<RequireRole allowedRoles={['STUDENT']}><StudentResults /></RequireRole>} />
-              <Route path="finance" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ACCOUNTANT', 'STUDENT']}><FinanceDashboard /></RequireRole>} />
-              <Route path="library" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'LIBRARIAN', 'STUDENT', 'LECTURER']}><LibraryDashboard /></RequireRole>} />
+              <Route path="finance" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT', 'STUDENT']}><FinanceDashboard /></RequireRole>} />
+              <Route path="library" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LIBRARIAN', 'STUDENT', 'LECTURER']}><LibraryDashboard /></RequireRole>} />
             </Route>
           </Routes>
         </Router>

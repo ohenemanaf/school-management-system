@@ -17,7 +17,7 @@ const Dashboard = () => {
     if (normalizedRole === 'GATEKEEPER') return <Navigate to="/gatekeeper" replace />;
     
     return <div className="p-10 flex flex-col items-center justify-center text-center">
-        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Unhandled Role</h2>
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Unhandled Role</h2>
         <p className="text-slate-500 dark:text-slate-400 mt-2">Your role "{user?.role}" ({normalizedRole}) is not assigned to a specific dashboard.</p>
     </div>;
 };

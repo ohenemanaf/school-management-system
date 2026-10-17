@@ -74,7 +74,7 @@ const StudentDashboard = () => {
     // Calculate avatar URL fallback if not uploaded
     const getAvatarUrl = () => {
         if (user?.profileImageUrl) {
-            return `http://localhost:5000${user.profileImageUrl}`;
+            return user.profileImageUrl.startsWith('http') ? user.profileImageUrl : `http://localhost:5000${user.profileImageUrl}`;
         }
         const gender = user?.gender?.toLowerCase() === 'female' ? 'girl' : 'boy';
         const nameParam = user?.name ? user.name.replace(' ', '+') : 'Student';
@@ -82,7 +82,7 @@ const StudentDashboard = () => {
     };
 
     return (
-        <div className="p-4 md:p-6 lg:p-10 max-w-7xl mx-auto space-y-8">
+        <div className="page space-y-8">
             {/* Header section with Glassmorphism Profile Card */}
             <div className="flex flex-col lg:flex-row gap-8 items-start">
                 {/* Profile Card */}
@@ -92,7 +92,7 @@ const StudentDashboard = () => {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-primary-400/20 rounded-full blur-3xl -mr-10 -mt-10"></div>
                         <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-400/20 rounded-full blur-3xl -ml-10 -mb-10"></div>
                         
-                        <div className="relative z-10">
+                        <div className="relative z-10 w-full min-w-0">
                             <div className="w-32 h-32 rounded-full p-2 bg-white dark:bg-slate-800/80 backdrop-blur-md shadow-lg mb-6 mx-auto">
                                 <img 
                                     src={getAvatarUrl()} 
@@ -100,19 +100,19 @@ const StudentDashboard = () => {
                                     className="w-full h-full rounded-full object-cover bg-slate-100 dark:bg-slate-800"
                                 />
                             </div>
-                            <h2 className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">{user?.name || 'Student'}</h2>
-                            <p className="text-primary-600 font-bold tracking-wide text-sm mt-1 mb-6 flex items-center justify-center gap-2">
+                            <h2 className="text-xl md:text-2xl font-semibold text-slate-800 dark:text-slate-100 tracking-tight break-words px-2" title={user?.name || 'Student'}>{user?.name || 'Student'}</h2>
+                            <p className="text-primary-600 font-semibold tracking-wide text-sm mt-1 mb-6 flex items-center justify-center gap-2">
                                 <IconSchool size={16} />
                                 {user?.role || 'STUDENT'}
                             </p>
 
-                            <div className="w-full bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 text-left space-y-3 border border-white dark:border-slate-700/50/60">
+                            <div className="w-full bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 text-left space-y-3 border border-slate-200/60 dark:border-slate-700/60">
                                 <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
                                     <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
                                         <IconId size={16} />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Index Number</p>
+                                        <p className="text-[10px] uppercase tracking-wider font-semibold text-slate-400">Index Number</p>
                                         <p className="font-semibold text-slate-800 dark:text-slate-100">{user?.enrollmentNumber || 'Pending'}</p>
                                     </div>
                                 </div>
@@ -121,7 +121,7 @@ const StudentDashboard = () => {
                                         <IconMail size={16} />
                                     </div>
                                     <div className="overflow-hidden">
-                                        <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Email Address</p>
+                                        <p className="text-[10px] uppercase tracking-wider font-semibold text-slate-400">Email Address</p>
                                         <p className="font-semibold text-slate-800 dark:text-slate-100 truncate">{user?.email}</p>
                                     </div>
                                 </div>
@@ -133,8 +133,8 @@ const StudentDashboard = () => {
                 {/* Main Content Area */}
                 <div className="w-full lg:w-2/3 space-y-8">
                     <div>
-                        <h1 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">{greeting()} 👋</h1>
-                        <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Here is your daily academic overview. Your account is currently in <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md font-bold text-xs">Read-Only</span> mode.</p>
+                        <h1 className="text-3xl font-semibold text-slate-800 dark:text-slate-100 tracking-tight">{greeting()} 👋</h1>
+                        <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Here is your daily academic overview. Your account is currently in <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md font-semibold text-xs">Read-Only</span> mode.</p>
                     </div>
 
                     {/* Stats Overview */}
@@ -148,8 +148,8 @@ const StudentDashboard = () => {
                                 <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${stat.color} text-white flex items-center justify-center mb-4 shadow-lg`}>
                                     {stat.icon}
                                 </div>
-                                <p className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 mb-1">{stat.value}</p>
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{stat.label}</span>
+                                <p className="text-3xl font-semibold text-slate-800 dark:text-slate-100 mb-1">{stat.value}</p>
+                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{stat.label}</span>
                             </div>
                         ))}
                     </div>
@@ -162,13 +162,13 @@ const StudentDashboard = () => {
                             <div className="w-16 h-16 bg-gradient-to-br from-primary-400 to-indigo-500 rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg group-hover:-translate-y-1 transition-transform">
                                 <IconCalendarTime size={32} />
                             </div>
-                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">My Timetable</h3>
+                            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">My Timetable</h3>
                             {todayClasses.length > 0 ? (
-                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-[200px]">You have <span className="font-bold text-primary-600">{todayClasses.length} classes</span> scheduled for today.</p>
+                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-[200px]">You have <span className="font-semibold text-primary-600">{todayClasses.length} classes</span> scheduled for today.</p>
                             ) : (
                                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-[200px]">View your full weekly class schedule.</p>
                             )}
-                            <div className="mt-4 flex items-center gap-1 text-sm font-bold text-primary-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="mt-4 flex items-center gap-1 text-sm font-semibold text-primary-600 opacity-0 group-hover:opacity-100 transition-opacity">
                                 View Schedule <IconArrowRight size={16} />
                             </div>
                         </Link>
@@ -179,13 +179,13 @@ const StudentDashboard = () => {
                             <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg group-hover:-translate-y-1 transition-transform">
                                 <IconReportAnalytics size={32} />
                             </div>
-                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">My Results</h3>
+                            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">My Results</h3>
                             {grades.length > 0 ? (
-                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-[200px]">Current Average: <span className="font-extrabold text-amber-600">{averageGrade}</span></p>
+                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-[200px]">Current Average: <span className="font-semibold text-amber-600">{averageGrade}</span></p>
                             ) : (
                                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-[200px]">View your academic analysis, proficiency graphs, and transcripts.</p>
                             )}
-                            <div className="mt-4 flex items-center gap-1 text-sm font-bold text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="mt-4 flex items-center gap-1 text-sm font-semibold text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity">
                                 View Analysis <IconArrowRight size={16} />
                             </div>
                         </Link>
@@ -199,20 +199,20 @@ const StudentDashboard = () => {
                                     <IconCash size={24} />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Fee Balance</h3>
+                                    <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Fee Balance</h3>
                                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Outstanding</p>
                                 </div>
                             </div>
                             <div className="flex-grow flex flex-col justify-center items-center">
                                 {balance > 0 ? (
                                     <>
-                                        <h2 className="text-4xl font-extrabold text-red-600 mb-2">{formatCurrency(balance)}</h2>
-                                        <p className="text-sm font-bold text-slate-500 dark:text-slate-400 bg-red-50 px-3 py-1 rounded-full text-red-600">Action Required</p>
+                                        <h2 className="text-4xl font-semibold text-red-600 mb-2">{formatCurrency(balance)}</h2>
+                                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 bg-red-50 px-3 py-1 rounded-full text-red-600">Action Required</p>
                                     </>
                                 ) : (
                                     <>
-                                        <h2 className="text-4xl font-extrabold text-green-600 mb-2">{formatCurrency(balance)}</h2>
-                                        <p className="text-sm font-bold text-slate-500 dark:text-slate-400 bg-green-50 px-3 py-1 rounded-full text-green-700">All Cleared 🎉</p>
+                                        <h2 className="text-4xl font-semibold text-green-600 mb-2">{formatCurrency(balance)}</h2>
+                                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 bg-green-50 px-3 py-1 rounded-full text-green-700">All Cleared 🎉</p>
                                     </>
                                 )}
                             </div>
@@ -225,7 +225,7 @@ const StudentDashboard = () => {
                                     <IconBooks size={24} />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Library Materials</h3>
+                                    <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Library Materials</h3>
                                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Assigned by Lecturers</p>
                                 </div>
                             </div>
@@ -236,7 +236,7 @@ const StudentDashboard = () => {
                                     assignments.map(item => (
                                         <div key={item.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 hover:border-blue-200 hover:bg-blue-50/50 transition-colors">
                                             <div>
-                                                <p className="font-bold text-slate-800 dark:text-slate-100 text-sm truncate max-w-[150px]">{item.book_title}</p>
+                                                <p className="font-semibold text-slate-800 dark:text-slate-100 text-sm truncate max-w-[150px]">{item.book_title}</p>
                                                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate max-w-[150px]">{item.author}</p>
                                             </div>
                                             {item.pdf_url ? (
@@ -250,7 +250,7 @@ const StudentDashboard = () => {
                                                     <IconDownload size={16} />
                                                 </a>
                                             ) : (
-                                                <span className="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">Physical</span>
+                                                <span className="text-xs font-semibold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">Physical</span>
                                             )}
                                         </div>
                                     ))

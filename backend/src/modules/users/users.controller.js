@@ -1,11 +1,18 @@
 const UserModel = require('./users.model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { secret: jwtSecret } = require('../../config/jwt');
 
 class UserController {
     static async register(req, res) {
         try {
             const { email, password, role } = req.body;
+            if (role !== undefined && role !== 'STUDENT') {
+                return res.status(400).json({ message: 'Public registration only supports student accounts.' });
+            }
+            if (typeof email !== 'string' || !email.includes('@') || typeof password !== 'string' || password.length < 12 || Buffer.byteLength(password, 'utf8') > 72) {
+                return res.status(400).json({ message: 'Provide a valid email and a password of at least 12 characters and at most 72 UTF-8 bytes.' });
+            }
             
             const existingUser = await UserModel.findByEmail(email);
             if (existingUser) {
@@ -15,7 +22,7 @@ class UserController {
             const salt = await bcrypt.genSalt(10);
             const passwordHash = await bcrypt.hash(password, salt);
 
-            const userId = await UserModel.create(email, passwordHash, role || 'STUDENT');
+            const userId = await UserModel.create(email, passwordHash, 'STUDENT');
 
             res.status(201).json({ message: 'User registered successfully', userId });
         } catch (error) {
@@ -44,7 +51,7 @@ class UserController {
 
             const token = jwt.sign(
                 { id: user.id, role: user.role, email: user.email },
-                process.env.JWT_SECRET || 'supersecretjwtkey_please_change_in_production',
+                jwtSecret,
                 { expiresIn: '1d' }
             );
 
