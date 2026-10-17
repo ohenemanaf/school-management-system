@@ -32,12 +32,11 @@ Run `npm run lint` and `npm run build` in `frontend`. Lint currently includes ex
 - `backend/src/`: API modules, middleware, database and email configuration
 - `backend/schema.sql`: initial database schema
 - `backend/seed.js`: initial administrator
-- `backend/migrate*.js`: historical database migrations; review against your database before using an individual script
 - `backend/public/uploads/`: runtime uploads; local files stay out of Git
 
 ## Version control
 
-Commit application source, package manifests and the backend/frontend lockfiles. Environment secrets, dependencies, build output, editor settings and uploaded user files are ignored. Historical migrations are retained for existing installations. Obsolete bulk styling scripts and unused starter assets have been removed.
+Commit application source, package manifests and the backend/frontend lockfiles. Environment secrets, dependencies, build output, editor settings and uploaded user files are ignored. Legacy migration scripts have been removed; existing databases require a separately reviewed upgrade plan. Obsolete bulk styling scripts and unused starter assets have been removed.
 
 ## Account security
 
