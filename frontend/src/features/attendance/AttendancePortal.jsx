@@ -93,15 +93,15 @@ const AttendancePortal = () => {
     const isStudent = user?.role === 'STUDENT';
 
     return (
-        <div className="p-4 md:p-6 lg:p-10 w-full overflow-hidden box-border">
+        <div className="page w-full  box-border">
             <div className="mb-6 md:mb-8">
-                <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Attendance</h1>
+                <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">Attendance</h1>
                 <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">Track and manage student presence via Fast-Tap Bulk mode.</p>
             </div>
 
             {!isStudent && (
                 <div className="glass p-6 rounded-2xl md:rounded-3xl shadow-sm mb-8">
-                    <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4 flex items-center justify-between">
                         Fast-Tap Bulk Attendance
                     </h2>
                     
@@ -110,15 +110,15 @@ const AttendancePortal = () => {
                         <select 
                             value={form.studentGroupId} 
                             onChange={e => setForm({...form, studentGroupId: e.target.value})} 
-                            className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all text-sm font-bold text-slate-700 dark:text-slate-200"
+                            className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all text-sm font-semibold text-slate-700 dark:text-slate-200"
                         >
                             {studentGroupsList.length === 0 && <option value="">No groups available</option>}
                             {studentGroupsList.map(c => (
                                 <option key={c.id} value={c.id}>{c.name}</option>
                             ))}
                         </select>
-                        <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all text-sm font-bold text-slate-700 dark:text-slate-200" />
-                        <button onClick={() => fetchStudentsForClass()} disabled={!form.studentGroupId || !form.date} className="bg-slate-800 hover:bg-slate-900 text-white px-5 py-3 rounded-xl font-bold transition-colors disabled:opacity-50 cursor-pointer">
+                        <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all text-sm font-semibold text-slate-700 dark:text-slate-200" />
+                        <button onClick={() => fetchStudentsForClass()} disabled={!form.studentGroupId || !form.date} className="bg-slate-800 hover:bg-slate-900 text-white px-5 py-3 rounded-xl font-semibold transition-colors disabled:opacity-50 cursor-pointer">
                             Load Students
                         </button>
                     </div>
@@ -126,8 +126,8 @@ const AttendancePortal = () => {
                     {studentsList.length > 0 && (
                         <div className="border border-slate-100 dark:border-slate-700/50 rounded-2xl bg-white dark:bg-slate-800 overflow-hidden">
                             <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700/50 flex justify-between items-center">
-                                <span className="text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Loaded {studentsList.length} Students</span>
-                                <button onClick={submitBulkAttendance} disabled={isSubmittingBulk} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-bold transition-colors cursor-pointer shadow-sm shadow-primary-200">
+                                <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Loaded {studentsList.length} Students</span>
+                                <button onClick={submitBulkAttendance} disabled={isSubmittingBulk} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors cursor-pointer shadow-sm shadow-primary-200">
                                     {isSubmittingBulk ? 'Saving...' : 'Submit Bulk Attendance'}
                                 </button>
                             </div>
@@ -140,10 +140,10 @@ const AttendancePortal = () => {
                                         }`}
                                     >
                                         <div>
-                                            <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">{student.first_name} {student.last_name}</p>
+                                            <p className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{student.first_name} {student.last_name}</p>
                                             <p className="text-xs text-slate-400 font-medium">{student.enrollment_number}</p>
                                         </div>
-                                        <div className={`px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
+                                        <div className={`px-3 py-1 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors ${
                                             student.status === 'Present' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-500 text-white shadow-md shadow-red-500/20'
                                         }`}>
                                             {student.status}
@@ -157,11 +157,11 @@ const AttendancePortal = () => {
             )}
 
             <div className="glass rounded-2xl md:rounded-3xl overflow-hidden shadow-sm p-4 md:p-6">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4">Attendance Records</h2>
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Attendance Records</h2>
                 <div className="overflow-x-auto w-full">
                     <table className="w-full text-left border-collapse min-w-[600px]">
                         <thead>
-                            <tr className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-bold">
+                            <tr className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
                                 <th className="px-6 py-4">Date</th>
                                 <th className="px-6 py-4">Group</th>
                                 {!isStudent && <th className="px-6 py-4">Student</th>}
@@ -177,10 +177,10 @@ const AttendancePortal = () => {
                                 attendance.map(rec => (
                                     <tr key={rec.id} className="hover:bg-primary-50/30 transition-colors">
                                         <td className="px-6 py-4">{new Date(rec.date).toLocaleDateString()}</td>
-                                        <td className="px-6 py-4 font-bold">{rec.student_group_name}</td>
+                                        <td className="px-6 py-4 font-semibold">{rec.student_group_name}</td>
                                         {!isStudent && <td className="px-6 py-4">{rec.first_name} {rec.last_name}</td>}
                                         <td className="px-6 py-4">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                                                 rec.status === 'Present' ? 'bg-emerald-100 text-emerald-700' :
                                                 rec.status === 'Absent' ? 'bg-red-100 text-red-700' :
                                                 'bg-amber-100 text-amber-700'

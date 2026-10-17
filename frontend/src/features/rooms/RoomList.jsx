@@ -52,37 +52,37 @@ const RoomList = () => {
     };
 
     return (
-        <div className="p-4 md:p-6 lg:p-10 w-full overflow-hidden box-border">
+        <div className="page w-full  box-border">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Rooms / Lecture Halls</h1>
+                    <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">Rooms / Lecture Halls</h1>
                     <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">Manage all physical spaces.</p>
                 </div>
                 {isAdmin && (
-                    <button onClick={() => setIsModalOpen(true)} className="flex justify-center items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-3 rounded-xl font-bold transition-colors w-full md:w-auto cursor-pointer">
+                    <button onClick={() => setIsModalOpen(true)} className="flex justify-center items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-3 rounded-xl font-semibold transition-colors w-full md:w-auto cursor-pointer">
                         <IconPlus size={20} />
                         Add Room
                     </button>
                 )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+            <div className="catalog-grid">
                 {loading ? (
                     <p className="col-span-full text-center text-slate-500 dark:text-slate-400 py-10">Loading rooms...</p>
                 ) : rooms.length === 0 ? (
                     <p className="col-span-full text-center text-slate-500 dark:text-slate-400 py-10">No rooms found.</p>
                 ) : (
                     rooms.map(room => (
-                        <div key={room.id} className="glass p-5 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700/50 relative group flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-primary-100 flex items-center justify-center text-primary-600 shrink-0">
+                        <div key={room.id} className="catalog-card glass p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700/50 relative group flex items-start gap-4 min-w-0 overflow-hidden">
+                            <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0">
                                 <IconBuilding size={24} />
                             </div>
-                            <div className="flex-1">
-                                <h3 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 leading-tight">{room.name}</h3>
-                                <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mt-1">Capacity: {room.capacity}</p>
+                            <div className="flex-1 min-w-0">
+                                <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 leading-tight break-words" title={room.name}>{room.name}</h3>
+                                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">Capacity: {room.capacity} seats</p>
                             </div>
                             {isAdmin && (
-                                <button onClick={() => handleDelete(room.id)} className="text-red-400 hover:bg-red-50 p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+                                <button onClick={() => handleDelete(room.id)} className="text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 p-2 rounded-xl opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 transition-all cursor-pointer shrink-0">
                                     <IconTrash size={18} />
                                 </button>
                             )}
@@ -95,7 +95,7 @@ const RoomList = () => {
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md overflow-hidden flex flex-col shadow-xl">
                         <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
-                            <h2 className="text-xl font-extrabold text-slate-800 dark:text-slate-100">Add New Room</h2>
+                            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Add New Room</h2>
                             <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:bg-slate-200 p-1.5 rounded-lg transition-colors cursor-pointer">
                                 <IconX size={20} />
                             </button>
@@ -103,7 +103,7 @@ const RoomList = () => {
                         
                         <form onSubmit={handleSubmit} className="p-8 flex flex-col gap-6">
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-bold text-slate-700 dark:text-slate-200">Room Name</label>
+                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Room Name</label>
                                 <input 
                                     type="text" 
                                     required
@@ -114,7 +114,7 @@ const RoomList = () => {
                                 />
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-bold text-slate-700 dark:text-slate-200">Capacity</label>
+                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Capacity</label>
                                 <input 
                                     type="number" 
                                     required
@@ -127,10 +127,10 @@ const RoomList = () => {
                             </div>
                             
                             <div className="flex gap-3 pt-4">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 px-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-50 dark:bg-slate-900/50 transition-colors cursor-pointer">
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 px-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-semibold hover:bg-slate-50 dark:bg-slate-900/50 transition-colors cursor-pointer">
                                     Cancel
                                 </button>
-                                <button type="submit" className="flex-1 py-3 px-4 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 transition-colors cursor-pointer">
+                                <button type="submit" className="flex-1 py-3 px-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors cursor-pointer">
                                     Save Room
                                 </button>
                             </div>

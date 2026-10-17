@@ -14,7 +14,7 @@ router.put('/preferences', authenticateToken, UserController.updatePreferences);
 router.put('/security/password', authenticateToken, UserController.updatePassword);
 
 // Admin routes for User Management
-router.get('/', authenticateToken, requireRole(['SUPER_ADMIN']), UserController.getAll);
+router.get('/', authenticateToken, requireRole(['SUPER_ADMIN', 'ADMIN']), UserController.getAll);
 router.put('/:id', authenticateToken, requireRole(['SUPER_ADMIN']), UserController.update);
 router.delete('/:id', authenticateToken, requireRole(['SUPER_ADMIN']), UserController.delete);
 

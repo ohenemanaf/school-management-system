@@ -34,9 +34,9 @@ const BroadcastCenter = () => {
     };
 
     return (
-        <div className="p-6 lg:p-10 max-w-4xl mx-auto">
+        <div className="page max-w-4xl mx-auto">
             <div className="mb-8">
-                <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
+                <h1 className="text-3xl font-semibold text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center text-primary-600">
                         <IconSpeakerphone size={24} />
                     </div>
@@ -51,7 +51,7 @@ const BroadcastCenter = () => {
                 <form onSubmit={handleSubmit} className="relative z-10 flex flex-col gap-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="flex flex-col gap-2">
-                            <label className="text-sm font-bold text-slate-700 dark:text-slate-200">Target Audience</label>
+                            <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Target Audience</label>
                             <select 
                                 value={audience} 
                                 onChange={(e) => setAudience(e.target.value)}
@@ -65,7 +65,7 @@ const BroadcastCenter = () => {
                         </div>
                         
                         <div className="flex flex-col gap-2">
-                            <label className="text-sm font-bold text-slate-700 dark:text-slate-200">Message Type</label>
+                            <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Message Type</label>
                             <select 
                                 value={type} 
                                 onChange={(e) => setType(e.target.value)}
@@ -80,7 +80,7 @@ const BroadcastCenter = () => {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-bold text-slate-700 dark:text-slate-200">Message Title</label>
+                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Message Title</label>
                         <input 
                             required
                             type="text" 
@@ -92,7 +92,7 @@ const BroadcastCenter = () => {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-bold text-slate-700 dark:text-slate-200">Detailed Message</label>
+                        <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Detailed Message</label>
                         <textarea 
                             required
                             rows="5"
@@ -108,7 +108,7 @@ const BroadcastCenter = () => {
                             <IconMail size={24} />
                         </div>
                         <div className="flex-1">
-                            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Send via Email</h3>
+                            <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">Send via Email</h3>
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Deliver this notification directly to users' inboxes</p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -121,7 +121,7 @@ const BroadcastCenter = () => {
                         <button 
                             type="submit" 
                             disabled={isSubmitting}
-                            className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-8 py-3.5 rounded-xl font-bold transition-all hover:shadow-lg hover:shadow-primary-600/20 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                            className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-8 py-3.5 rounded-xl font-semibold transition-all hover:shadow-lg hover:shadow-primary-600/20 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
                         >
                             <IconSend size={20} />
                             {isSubmitting ? 'Broadcasting...' : 'Broadcast Message'}

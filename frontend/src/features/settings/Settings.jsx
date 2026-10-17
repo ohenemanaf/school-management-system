@@ -116,9 +116,9 @@ const Settings = () => {
     ];
 
     return (
-        <div className="p-6 lg:p-10">
+        <div className="page ">
             <div className="mb-10">
-                <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Settings</h1>
+                <h1 className="text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">Settings</h1>
                 <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">Manage your account preferences and system settings.</p>
             </div>
 
@@ -129,7 +129,7 @@ const Settings = () => {
                         <button 
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-3 px-5 py-4 rounded-2xl font-bold border transition-colors cursor-pointer ${
+                            className={`flex items-center gap-3 px-5 py-4 rounded-2xl font-semibold border transition-colors cursor-pointer ${
                                 activeTab === tab.id 
                                 ? 'bg-white dark:bg-slate-800 shadow-sm shadow-primary-100 text-primary-600 border-white dark:border-slate-700/50' 
                                 : 'text-slate-600 dark:text-slate-300 hover:bg-white dark:bg-slate-800/60 border-transparent'
@@ -145,7 +145,7 @@ const Settings = () => {
                 <div className="lg:col-span-2">
                     {activeTab === 'profile' && (
                         <div className="glass p-8 rounded-3xl shadow-sm">
-                            <h2 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 mb-6">Profile Information</h2>
+                            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-6">Profile Information</h2>
                             
                             <div className="flex items-center gap-6 mb-8">
                                 <img 
@@ -154,7 +154,7 @@ const Settings = () => {
                                     className="w-24 h-24 rounded-full border-4 border-white dark:border-slate-700/50 shadow-md object-cover"
                                 />
                                 <div>
-                                    <button onClick={() => toast("Avatar upload coming soon!", { icon: "📸" })} className="px-5 py-2.5 bg-primary-50 text-primary-700 font-bold rounded-xl hover:bg-primary-100 transition-colors text-sm cursor-pointer">
+                                    <button onClick={() => toast("Avatar upload coming soon!", { icon: "📸" })} className="px-5 py-2.5 bg-primary-50 text-primary-700 font-semibold rounded-xl hover:bg-primary-100 transition-colors text-sm cursor-pointer">
                                         Change Avatar
                                     </button>
                                     <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-3">JPG, GIF or PNG. Max size of 800K</p>
@@ -164,17 +164,17 @@ const Settings = () => {
                             <form className="space-y-5">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">Role</label>
+                                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Role</label>
                                         <input type="text" disabled value={user?.role || ''} className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none font-semibold text-slate-500 dark:text-slate-400 cursor-not-allowed" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">Email Address</label>
+                                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Email Address</label>
                                         <input type="email" disabled value={user?.email || ''} className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none font-semibold text-slate-500 dark:text-slate-400 cursor-not-allowed" />
                                     </div>
                                 </div>
                                 
                                 <div className="pt-6 mt-6 border-t border-slate-200 dark:border-slate-700/50 flex justify-end gap-3">
-                                    <button type="button" className="px-6 py-2.5 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:bg-slate-800/60 transition-colors cursor-pointer">Discard</button>
+                                    <button type="button" className="px-6 py-2.5 rounded-xl font-semibold text-slate-600 dark:text-slate-300 hover:bg-white dark:bg-slate-800/60 transition-colors cursor-pointer">Discard</button>
                                 </div>
                             </form>
                         </div>
@@ -182,24 +182,24 @@ const Settings = () => {
 
                     {activeTab === 'notifications' && (
                         <div className="glass p-8 rounded-3xl shadow-sm">
-                            <h2 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 mb-6">Notification Preferences</h2>
+                            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-6">Notification Preferences</h2>
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700/50">
                                     <div>
-                                        <h3 className="font-bold text-slate-700 dark:text-slate-200">Email Alerts</h3>
+                                        <h3 className="font-semibold text-slate-700 dark:text-slate-200">Email Alerts</h3>
                                         <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Receive weekly system summaries.</p>
                                     </div>
                                     <input type="checkbox" checked={emailAlerts} onChange={(e) => setEmailAlerts(e.target.checked)} className="w-5 h-5 accent-primary-600 cursor-pointer" />
                                 </div>
                                 <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700/50">
                                     <div>
-                                        <h3 className="font-bold text-slate-700 dark:text-slate-200">Push Notifications</h3>
+                                        <h3 className="font-semibold text-slate-700 dark:text-slate-200">Push Notifications</h3>
                                         <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Get real-time alerts in the browser.</p>
                                     </div>
                                     <input type="checkbox" checked={pushNotifications} onChange={(e) => setPushNotifications(e.target.checked)} className="w-5 h-5 accent-primary-600 cursor-pointer" />
                                 </div>
                                 <div className="pt-6 mt-6 border-t border-slate-200 dark:border-slate-700/50 flex justify-end gap-3">
-                                    <button type="button" disabled={isSaving} onClick={handleSavePreferences} className="px-6 py-2.5 rounded-xl font-bold text-white bg-primary-600 hover:bg-primary-700 transition-colors shadow-sm cursor-pointer disabled:opacity-70">
+                                    <button type="button" disabled={isSaving} onClick={handleSavePreferences} className="px-6 py-2.5 rounded-xl font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors shadow-sm cursor-pointer disabled:opacity-70">
                                         {isSaving ? 'Saving...' : 'Save Preferences'}
                                     </button>
                                 </div>
@@ -209,24 +209,24 @@ const Settings = () => {
 
                     {activeTab === 'security' && (
                         <div className="glass p-8 rounded-3xl shadow-sm">
-                            <h2 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 mb-6">Security Settings</h2>
+                            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 mb-6">Security Settings</h2>
                             <form onSubmit={handleUpdatePassword} className="space-y-5">
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">Current Password</label>
-                                    <input type="password" required value={passwordForm.currentPassword} onChange={e => setPasswordForm({...passwordForm, currentPassword: e.target.value})} placeholder="••••••••" className="w-full px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-bold text-slate-700 dark:text-slate-200" />
+                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Current Password</label>
+                                    <input type="password" required value={passwordForm.currentPassword} onChange={e => setPasswordForm({...passwordForm, currentPassword: e.target.value})} placeholder="••••••••" className="w-full px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200" />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">New Password</label>
-                                        <input type="password" required value={passwordForm.newPassword} onChange={e => setPasswordForm({...passwordForm, newPassword: e.target.value})} placeholder="••••••••" className="w-full px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-bold text-slate-700 dark:text-slate-200" />
+                                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">New Password</label>
+                                        <input type="password" required value={passwordForm.newPassword} onChange={e => setPasswordForm({...passwordForm, newPassword: e.target.value})} placeholder="••••••••" className="w-full px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">Confirm Password</label>
-                                        <input type="password" required value={passwordForm.confirmPassword} onChange={e => setPasswordForm({...passwordForm, confirmPassword: e.target.value})} placeholder="••••••••" className="w-full px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-bold text-slate-700 dark:text-slate-200" />
+                                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Confirm Password</label>
+                                        <input type="password" required value={passwordForm.confirmPassword} onChange={e => setPasswordForm({...passwordForm, confirmPassword: e.target.value})} placeholder="••••••••" className="w-full px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200" />
                                     </div>
                                 </div>
                                 <div className="pt-6 mt-6 border-t border-slate-200 dark:border-slate-700/50 flex justify-end gap-3">
-                                    <button type="submit" disabled={isSaving} className="px-6 py-2.5 rounded-xl font-bold text-white bg-primary-600 hover:bg-primary-700 transition-colors shadow-sm cursor-pointer disabled:opacity-70">
+                                    <button type="submit" disabled={isSaving} className="px-6 py-2.5 rounded-xl font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors shadow-sm cursor-pointer disabled:opacity-70">
                                         {isSaving ? 'Updating...' : 'Update Password'}
                                     </button>
                                 </div>
@@ -337,7 +337,7 @@ const Settings = () => {
                                 </div>
 
                                 <div className="pt-6 border-t border-slate-200 dark:border-slate-700/50 flex justify-end gap-3">
-                                    <button type="button" disabled={isSaving} onClick={handleSavePreferences} className="px-6 py-2.5 rounded-xl font-bold text-white bg-primary-600 hover:bg-primary-700 transition-colors shadow-sm cursor-pointer disabled:opacity-70">
+                                    <button type="button" disabled={isSaving} onClick={handleSavePreferences} className="px-6 py-2.5 rounded-xl font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors shadow-sm cursor-pointer disabled:opacity-70">
                                         {isSaving ? 'Saving...' : 'Save Preferences'}
                                     </button>
                                 </div>

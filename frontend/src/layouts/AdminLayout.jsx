@@ -99,11 +99,11 @@ const AdminLayout = () => {
         { path: '/admin/staff-attendance', label: 'Staff Attendance', icon: <IconUsers size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN'] },
         { path: '/admin/grades', label: 'Gradebook', icon: <IconTrophy size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER'] },
         { path: '/admin/results', label: 'My Results', icon: <IconReportAnalytics size={20} />, roles: ['STUDENT'] },
-        { path: '/admin/finance', label: 'Finance', icon: <IconCash size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ACCOUNTANT', 'STUDENT'] },
-        { path: '/admin/library', label: 'Library', icon: <IconBooks size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'LIBRARIAN', 'STUDENT', 'LECTURER'] },
+        { path: '/admin/finance', label: 'Finance', icon: <IconCash size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT', 'STUDENT'] },
+        { path: '/admin/library', label: 'Library', icon: <IconBooks size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LIBRARIAN', 'STUDENT', 'LECTURER'] },
         { path: '/admin/materials', label: 'Materials', icon: <IconFileText size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER', 'STUDENT'] },
         { path: '/admin/lecturers', label: 'Lecturers', icon: <IconSchool size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN'] },
-        { path: '/admin/users', label: 'System Users', icon: <IconUsers size={20} />, roles: ['SUPER_ADMIN'] },
+        { path: '/admin/users', label: 'System Users', icon: <IconUsers size={20} />, roles: ['SUPER_ADMIN', 'ADMIN'] },
         { path: '/admin/broadcast', label: 'Broadcast', icon: <IconSpeakerphone size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT'] },
         { path: '/admin/settings', label: 'Settings', icon: <IconSettings size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT', 'LIBRARIAN', 'LECTURER', 'STUDENT', 'GATEKEEPER'] },
     ];
@@ -117,7 +117,7 @@ const AdminLayout = () => {
     const pageTitle = currentNavItem ? currentNavItem.label : 'Dashboard';
 
     return (
-        <div className="min-h-screen bg-[#F0F4F8] dark:bg-slate-900 flex relative overflow-hidden">
+        <div className="app-shell min-h-screen bg-[#F0F4F8] dark:bg-slate-900 flex relative overflow-hidden">
             {/* Sidebar overlay */}
             {sidebarOpen && (
                 <div 
@@ -128,7 +128,7 @@ const AdminLayout = () => {
 
             {/* Sidebar */}
             <aside className={`
-                fixed lg:sticky top-0 left-0 h-screen bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/60 z-50 transform transition-all duration-300 ease-in-out flex flex-col
+                fixed lg:sticky top-0 left-0 h-screen shrink-0 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/60 z-50 transform transition-all duration-300 ease-in-out flex flex-col
                 ${isCollapsed ? 'w-20' : 'w-64'}
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             `}>
@@ -138,7 +138,7 @@ const AdminLayout = () => {
                         <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center shrink-0">
                             <IconSchool className="text-white" size={18} />
                         </div>
-                        {!isCollapsed && <span className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight whitespace-nowrap">SMS</span>}
+                        {!isCollapsed && <span className="text-base font-semibold text-slate-800 dark:text-slate-100 tracking-tight whitespace-nowrap">SMS</span>}
                     </div>
                     {!isCollapsed && (
                         <button className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:bg-slate-800 transition-colors" onClick={() => setSidebarOpen(false)}>
@@ -186,9 +186,9 @@ const AdminLayout = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col h-screen overflow-y-auto relative w-full">
+            <main className="flex-1 min-w-0 flex flex-col h-dvh overflow-hidden relative">
                 {/* Topbar */}
-                <header className="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700/60 sticky top-0 z-30 flex items-center justify-between px-4 lg:px-8">
+                <header className="h-16 shrink-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700/60 sticky top-0 z-30 flex items-center justify-between px-4 lg:px-8">
                     <div className="flex items-center gap-3">
                         <button 
                             className="lg:hidden p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800 transition-colors cursor-pointer"
@@ -197,7 +197,7 @@ const AdminLayout = () => {
                             <IconMenu2 size={20} />
                         </button>
                         <div className="hidden sm:block">
-                            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{pageTitle}</h2>
+                            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{pageTitle}</h2>
                         </div>
                     </div>
 
@@ -215,11 +215,11 @@ const AdminLayout = () => {
 
                             {/* Notifications Dropdown */}
                             {notificationsOpen && (
-                                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700/50 overflow-hidden z-50">
+                                <div className="absolute right-0 mt-2 w-[min(24rem,calc(100vw-2rem))] bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700/50 overflow-hidden z-50">
                                     <div className="p-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
-                                        <h3 className="font-bold text-slate-800 dark:text-slate-100">Notifications</h3>
+                                        <h3 className="font-semibold text-slate-800 dark:text-slate-100">Notifications</h3>
                                         {unreadCount > 0 && (
-                                            <button onClick={markAllAsRead} className="text-xs font-bold text-primary-600 hover:text-primary-700 transition-colors cursor-pointer">
+                                            <button onClick={markAllAsRead} className="text-xs font-semibold text-primary-600 hover:text-primary-700 transition-colors cursor-pointer">
                                                 Mark all as read
                                             </button>
                                         )}
@@ -240,7 +240,7 @@ const AdminLayout = () => {
                                                         <div className="flex items-start gap-3">
                                                             <div className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${!notification.is_read ? 'bg-primary-500' : 'bg-transparent'}`}></div>
                                                             <div className="flex-1 min-w-0">
-                                                                <p className={`text-sm font-bold truncate ${!notification.is_read ? 'text-slate-800 dark:text-slate-100' : 'text-slate-600 dark:text-slate-300'}`}>
+                                                                <p className={`text-sm font-semibold truncate ${!notification.is_read ? 'text-slate-800 dark:text-slate-100' : 'text-slate-600 dark:text-slate-300'}`}>
                                                                     {notification.title}
                                                                 </p>
                                                                 <p className={`text-xs mt-1 line-clamp-2 ${!notification.is_read ? 'text-slate-600 dark:text-slate-300 font-medium' : 'text-slate-500 dark:text-slate-400'}`}>
@@ -259,23 +259,23 @@ const AdminLayout = () => {
                                 </div>
                             )}
                         </div>
-                        <div className="flex items-center gap-2.5 cursor-pointer py-1 px-2 rounded-lg hover:bg-slate-50 dark:bg-slate-900/50 transition-colors">
+                        <div className="flex min-w-0 items-center gap-2.5 cursor-pointer py-1 px-2 rounded-lg hover:bg-slate-50 dark:bg-slate-900/50 transition-colors">
                             <img 
                                 src={`https://ui-avatars.com/api/?name=${user?.name || user?.email}&background=7C3AED&color=fff&bold=true&size=80`} 
                                 alt="Profile" 
-                                className="w-8 h-8 rounded-lg"
+                                className="w-8 h-8 shrink-0 rounded-lg"
                             />
-                            <div className="hidden md:block">
-                                <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-none mb-0.5">{user?.name || user?.email?.split('@')[0]}</p>
-                                <p className="text-[11px] text-slate-400 font-medium leading-none capitalize">{user?.role?.toLowerCase()}</p>
+                            <div className="hidden md:block min-w-0 max-w-48">
+                                <p className="truncate text-xs font-semibold text-slate-700 dark:text-slate-200 leading-none mb-0.5">{user?.name || user?.email?.split('@')[0]}</p>
+                                <p className="text-[11px] text-slate-400 font-medium leading-none capitalize">{user?.role?.toLowerCase().replaceAll('_', ' ')}</p>
                             </div>
                         </div>
                     </div>
                 </header>
 
                 {/* Page Content */}
-                <div className="flex-1 overflow-x-hidden overflow-y-auto">
-                    <div className={`w-full ${isBoxed ? 'max-w-7xl mx-auto' : 'px-4 lg:px-8'}`}>
+                <div className="page-scroll flex-1 min-h-0 min-w-0 overflow-y-auto">
+                    <div className={`w-full ${isBoxed ? 'max-w-7xl mx-auto' : ''}`}>
                         <Outlet />
                     </div>
                 </div>

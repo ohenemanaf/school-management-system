@@ -148,20 +148,20 @@ const LibraryDashboard = () => {
 
     const getStatusBadge = (status) => {
         switch(status) {
-            case 'Returned': return <span className="px-2.5 py-1 text-xs font-bold bg-green-100 text-green-700 rounded-full">Returned</span>;
-            case 'Overdue': return <span className="px-2.5 py-1 text-xs font-bold bg-red-100 text-red-700 rounded-full">Overdue</span>;
-            default: return <span className="px-2.5 py-1 text-xs font-bold bg-yellow-100 text-yellow-700 rounded-full">Borrowed</span>;
+            case 'Returned': return <span className="px-2.5 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full">Returned</span>;
+            case 'Overdue': return <span className="px-2.5 py-1 text-xs font-semibold bg-red-100 text-red-700 rounded-full">Overdue</span>;
+            default: return <span className="px-2.5 py-1 text-xs font-semibold bg-yellow-100 text-yellow-700 rounded-full">Borrowed</span>;
         }
     };
 
     if (loading) return <div className="p-8 text-center text-slate-500 dark:text-slate-400">Loading library data...</div>;
 
     return (
-        <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+        <div className="page ">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Library Management</h1>
+                    <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">Library Management</h1>
                     <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">Manage book inventory, issue books, and track returns</p>
                 </div>
                 {isLibrarianOrAdmin && (
@@ -189,24 +189,24 @@ const LibraryDashboard = () => {
                         <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-4 border border-blue-100">
                             <IconBooks size={24} stroke={2} />
                         </div>
-                        <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Total Books</p>
-                        <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100">{stats.totalBooks}</h3>
+                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Total Books</p>
+                        <h3 className="text-3xl font-semibold text-slate-800 dark:text-slate-100">{stats.totalBooks}</h3>
                     </div>
 
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm relative overflow-hidden group">
                         <div className="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center text-yellow-600 mb-4 border border-yellow-100">
                             <IconBook size={24} stroke={2} />
                         </div>
-                        <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Books Borrowed</p>
-                        <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100">{stats.borrowedBooks}</h3>
+                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Books Borrowed</p>
+                        <h3 className="text-3xl font-semibold text-slate-800 dark:text-slate-100">{stats.borrowedBooks}</h3>
                     </div>
 
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm">
                         <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center text-red-600 mb-4 border border-red-100">
                             <IconArrowBackUp size={24} stroke={2} />
                         </div>
-                        <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Overdue Returns</p>
-                        <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100">{stats.overdueBooks}</h3>
+                        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Overdue Returns</p>
+                        <h3 className="text-3xl font-semibold text-slate-800 dark:text-slate-100">{stats.overdueBooks}</h3>
                     </div>
                 </div>
             )}
@@ -215,20 +215,20 @@ const LibraryDashboard = () => {
             <div className="flex border-b border-slate-200 dark:border-slate-700 mb-6">
                 <button 
                     onClick={() => setActiveTab('catalog')}
-                    className={`py-3 px-6 font-bold text-sm border-b-2 transition-colors ${activeTab === 'catalog' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'}`}
+                    className={`py-3 px-6 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'catalog' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'}`}
                 >
                     Book Catalog
                 </button>
                 <button 
                     onClick={() => setActiveTab('circulation')}
-                    className={`py-3 px-6 font-bold text-sm border-b-2 transition-colors ${activeTab === 'circulation' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'}`}
+                    className={`py-3 px-6 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'circulation' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'}`}
                 >
                     {isLibrarianOrAdmin ? 'Circulation & Returns' : 'My Borrowed Books'}
                 </button>
                 {isLibrarianOrAdmin && (
                     <button 
                         onClick={() => setActiveTab('assignments')}
-                        className={`py-3 px-6 font-bold text-sm border-b-2 transition-colors ${activeTab === 'assignments' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'}`}
+                        className={`py-3 px-6 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'assignments' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'}`}
                     >
                         Class Assignments
                     </button>
@@ -242,12 +242,12 @@ const LibraryDashboard = () => {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700/60">
-                                    <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Book Title</th>
-                                    <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Author</th>
-                                    <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
-                                    <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">ISBN</th>
-                                    <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Availability</th>
-                                    <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                                    <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Book Title</th>
+                                    <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Author</th>
+                                    <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                                    <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">ISBN</th>
+                                    <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Availability</th>
+                                    <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -258,17 +258,17 @@ const LibraryDashboard = () => {
                                 ) : (
                                     books.map(book => (
                                         <tr key={book.id} className="hover:bg-slate-50 dark:bg-slate-900/50 transition-colors">
-                                            <td className="p-4 font-bold text-slate-800 dark:text-slate-100">{book.title}</td>
+                                            <td className="p-4 font-semibold text-slate-800 dark:text-slate-100">{book.title}</td>
                                             <td className="p-4 font-medium text-slate-600 dark:text-slate-300">{book.author}</td>
                                             <td className="p-4">
-                                                <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold">{book.category}</span>
+                                                <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-semibold">{book.category}</span>
                                             </td>
                                             <td className="p-4 text-sm font-medium text-slate-500 dark:text-slate-400">{book.isbn || 'N/A'}</td>
                                             <td className="p-4">
                                                 {book.available_copies > 0 ? (
-                                                    <span className="text-green-600 font-bold text-sm">{book.available_copies} of {book.total_copies} Available</span>
+                                                    <span className="text-green-600 font-semibold text-sm">{book.available_copies} of {book.total_copies} Available</span>
                                                 ) : (
-                                                    <span className="text-red-500 font-bold text-sm">Checked Out</span>
+                                                    <span className="text-red-500 font-semibold text-sm">Checked Out</span>
                                                 )}
                                             </td>
                                             <td className="p-4">
@@ -277,7 +277,7 @@ const LibraryDashboard = () => {
                                                         href={`http://localhost:5000${book.pdf_url}`} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer"
-                                                        className="text-xs font-bold bg-primary-50 text-primary-600 px-3 py-1.5 rounded-lg hover:bg-primary-100 transition-colors inline-block"
+                                                        className="text-xs font-semibold bg-primary-50 text-primary-600 px-3 py-1.5 rounded-lg hover:bg-primary-100 transition-colors inline-block"
                                                     >
                                                         Read PDF
                                                     </a>
@@ -299,12 +299,12 @@ const LibraryDashboard = () => {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700/60">
-                                    <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Book Title</th>
-                                    {isLibrarianOrAdmin && <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Borrower</th>}
-                                    <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Issue Date</th>
-                                    <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Due Date</th>
-                                    <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                                    {isLibrarianOrAdmin && <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>}
+                                    <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Book Title</th>
+                                    {isLibrarianOrAdmin && <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Borrower</th>}
+                                    <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Issue Date</th>
+                                    <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Due Date</th>
+                                    <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                                    {isLibrarianOrAdmin && <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -315,10 +315,10 @@ const LibraryDashboard = () => {
                                 ) : (
                                     loans.map(loan => (
                                         <tr key={loan.id} className="hover:bg-slate-50 dark:bg-slate-900/50 transition-colors">
-                                            <td className="p-4 font-bold text-slate-800 dark:text-slate-100">{loan.book_title}</td>
+                                            <td className="p-4 font-semibold text-slate-800 dark:text-slate-100">{loan.book_title}</td>
                                             {isLibrarianOrAdmin && (
                                                 <td className="p-4">
-                                                    <p className="font-bold text-slate-800 dark:text-slate-100">{loan.first_name} {loan.last_name}</p>
+                                                    <p className="font-semibold text-slate-800 dark:text-slate-100">{loan.first_name} {loan.last_name}</p>
                                                     <p className="text-xs text-slate-500 dark:text-slate-400">{loan.role_name}</p>
                                                 </td>
                                             )}
@@ -330,7 +330,7 @@ const LibraryDashboard = () => {
                                                     {loan.status === 'Borrowed' && (
                                                         <button 
                                                             onClick={() => handleReturnBook(loan.id)}
-                                                            className="text-xs font-bold bg-primary-50 text-primary-600 px-3 py-1.5 rounded-lg hover:bg-primary-100 transition-colors"
+                                                            className="text-xs font-semibold bg-primary-50 text-primary-600 px-3 py-1.5 rounded-lg hover:bg-primary-100 transition-colors"
                                                         >
                                                             Mark Returned
                                                         </button>
@@ -350,10 +350,10 @@ const LibraryDashboard = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-1">
                         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm p-6">
-                            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4">Assign Book to Class</h2>
+                            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Assign Book to Class</h2>
                             <form onSubmit={handleAssignBook} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Select Book</label>
+                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Select Book</label>
                                     <select 
                                         required 
                                         value={assignForm.bookId} 
@@ -392,9 +392,9 @@ const LibraryDashboard = () => {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700/60">
-                                        <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Book Title</th>
-                                        <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Assigned Class</th>
-                                        <th className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                                        <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Book Title</th>
+                                        <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Assigned Class</th>
+                                        <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
@@ -430,36 +430,36 @@ const LibraryDashboard = () => {
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up">
                         <div className="p-6 border-b border-slate-100 dark:border-slate-700/50 flex justify-between items-center">
-                            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Add New Book</h2>
+                            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Add New Book</h2>
                             <button onClick={() => setShowBookModal(false)} className="p-2 text-slate-400 hover:bg-slate-100 dark:bg-slate-800 rounded-full transition-colors cursor-pointer">
                                 <IconX size={20} />
                             </button>
                         </div>
                         <form onSubmit={handleAddBook} className="p-6 space-y-5">
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">Book Title</label>
+                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">Book Title</label>
                                 <input type="text" required className="input" value={bookForm.title} onChange={e => setBookForm({...bookForm, title: e.target.value})} placeholder="e.g. Introduction to Physics" />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">Author</label>
+                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">Author</label>
                                 <input type="text" required className="input" value={bookForm.author} onChange={e => setBookForm({...bookForm, author: e.target.value})} placeholder="e.g. John Doe" />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">ISBN</label>
+                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">ISBN</label>
                                     <input type="text" className="input" value={bookForm.isbn} onChange={e => setBookForm({...bookForm, isbn: e.target.value})} placeholder="Optional" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">Category</label>
+                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">Category</label>
                                     <input type="text" required className="input" value={bookForm.category} onChange={e => setBookForm({...bookForm, category: e.target.value})} placeholder="e.g. Science" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">Total Copies</label>
+                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">Total Copies</label>
                                 <input type="number" min="1" required className="input" value={bookForm.total_copies} onChange={e => setBookForm({...bookForm, total_copies: parseInt(e.target.value)})} />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">E-Book PDF (Optional)</label>
+                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">E-Book PDF (Optional)</label>
                                 <input type="file" accept="application/pdf" className="input" onChange={e => setPdfFile(e.target.files[0])} />
                             </div>
                             <div className="pt-2 flex justify-end gap-3">
@@ -476,14 +476,14 @@ const LibraryDashboard = () => {
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-fade-in-up">
                         <div className="p-6 border-b border-slate-100 dark:border-slate-700/50 flex justify-between items-center">
-                            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Issue Book to User</h2>
+                            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Issue Book to User</h2>
                             <button onClick={() => setShowIssueModal(false)} className="p-2 text-slate-400 hover:bg-slate-100 dark:bg-slate-800 rounded-full transition-colors cursor-pointer">
                                 <IconX size={20} />
                             </button>
                         </div>
                         <form onSubmit={handleIssueBook} className="p-6 space-y-5">
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">Select Book</label>
+                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">Select Book</label>
                                 <select required className="input bg-white dark:bg-slate-800" value={issueForm.bookId} onChange={e => setIssueForm({...issueForm, bookId: e.target.value})}>
                                     <option value="">-- Choose Book --</option>
                                     {books.filter(b => b.available_copies > 0).map(b => (
@@ -492,14 +492,14 @@ const LibraryDashboard = () => {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">Select Borrower (Student)</label>
+                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">Select Borrower (Student)</label>
                                 <select required className="input bg-white dark:bg-slate-800" value={issueForm.userId} onChange={e => setIssueForm({...issueForm, userId: e.target.value})}>
                                     <option value="">-- Choose Borrower --</option>
                                     {systemUsers.map(s => <option key={s.id} value={s.user_id}>{s.first_name} {s.last_name}</option>)}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1.5">Due Date</label>
+                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">Due Date</label>
                                 <input type="date" required className="input" value={issueForm.dueDate} onChange={e => setIssueForm({...issueForm, dueDate: e.target.value})} />
                             </div>
                             <div className="pt-2 flex justify-end gap-3">

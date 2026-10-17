@@ -109,3 +109,15 @@ dist
 
 # Mac OS
 .DS_Store
+
+# Local settings and generated/user data
+.env.*
+!.env.example
+.vscode/
+.idea/
+backend/public/uploads/**
+!backend/public/uploads/.gitkeep
+
+# Local-only demo reset utility
+/backend/seed_mock_data.js
+/CLEANUP.md

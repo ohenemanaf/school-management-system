@@ -18,6 +18,13 @@ INSERT IGNORE INTO roles (name, description) VALUES
 ('STUDENT', 'Student with access to own records'),
 ('GATEKEEPER', 'Security guard for token generation');
 
+-- Create programs table
+CREATE TABLE IF NOT EXISTS programs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    code VARCHAR(20) UNIQUE
+);
+
 -- Create student_groups table (The People)
 CREATE TABLE IF NOT EXISTS student_groups (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -76,13 +83,6 @@ CREATE TABLE IF NOT EXISTS lecturers (
     department VARCHAR(100) NOT NULL,
     hire_date DATE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Create programs table
-CREATE TABLE IF NOT EXISTS programs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    code VARCHAR(20) UNIQUE
 );
 
 -- Create lecturer_programs mapping table
@@ -202,6 +202,7 @@ CREATE TABLE IF NOT EXISTS books (
     category VARCHAR(100),
     total_copies INT DEFAULT 1,
     available_copies INT DEFAULT 1,
+    pdf_url VARCHAR(255) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -216,6 +217,16 @@ CREATE TABLE IF NOT EXISTS book_loans (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS book_class_assignments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT NOT NULL,
+    student_group_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_group_id) REFERENCES student_groups(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_book_group (book_id, student_group_id)
 );
 
 -- FINANCE MODULE TABLES

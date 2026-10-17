@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 import { IconSearch, IconUser, IconTrash } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
 
 const UserList = () => {
+    const { user: currentUser } = useAuth();
+    const canManage = currentUser?.role === 'SUPER_ADMIN';
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -49,11 +52,11 @@ const UserList = () => {
     );
 
     return (
-        <div className="p-6 lg:p-10">
+        <div className="page ">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">System Users</h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">Manage administrators, lecturers, and student accounts.</p>
+                    <h1 className="text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">System Users</h1>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">{canManage ? 'Manage administrators, lecturers, and student accounts.' : 'View accounts. Only super administrators can change roles, status, or delete accounts.'}</p>
                 </div>
             </div>
 
@@ -77,7 +80,7 @@ const UserList = () => {
                 <div className="hidden md:block overflow-x-auto w-full">
                     <table className="w-full text-left border-collapse min-w-[600px]">
                         <thead>
-                            <tr className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-bold">
+                            <tr className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
                                 <th className="px-6 py-4">User</th>
                                 <th className="px-6 py-4">Role</th>
                                 <th className="px-6 py-4">Status</th>
@@ -101,15 +104,15 @@ const UserList = () => {
                                                 <IconUser size={20} />
                                             </div>
                                             <div>
-                                                <p className="font-bold text-slate-800 dark:text-slate-100">{user.email}</p>
+                                                <p className="font-semibold text-slate-800 dark:text-slate-100">{user.email}</p>
                                                 <p className="text-xs text-slate-500 dark:text-slate-400">Joined {new Date(user.created_at).toLocaleDateString()}</p>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <select 
+                                            <select disabled={!canManage}
                                                 value={user.role} 
                                                 onChange={(e) => handleUserUpdate(user.id, 'role', e.target.value)}
-                                                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm cursor-pointer"
+                                                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm cursor-pointer"
                                             >
                                                 <option value="SUPER_ADMIN">SUPER_ADMIN</option>
                                                 <option value="HEADMASTER">HEADMASTER</option>
@@ -122,17 +125,17 @@ const UserList = () => {
                                             </select>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <select 
+                                            <select disabled={!canManage}
                                                 value={user.is_active ? '1' : '0'} 
                                                 onChange={(e) => handleUserUpdate(user.id, 'is_active', parseInt(e.target.value))}
-                                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm cursor-pointer ${user.is_active ? 'text-emerald-700' : 'text-red-700'}`}
+                                                className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm cursor-pointer ${user.is_active ? 'text-emerald-700' : 'text-red-700'}`}
                                             >
                                                 <option value="1">Active</option>
                                                 <option value="0">Disabled</option>
                                             </select>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button onClick={() => handleDelete(user.id)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors cursor-pointer">
+                                            <button disabled={!canManage} onClick={() => handleDelete(user.id)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors cursor-pointer">
                                                 <IconTrash size={18} />
                                             </button>
                                         </td>
@@ -157,17 +160,17 @@ const UserList = () => {
                                         <IconUser size={20} />
                                     </div>
                                     <div className="overflow-hidden">
-                                        <p className="font-bold text-slate-800 dark:text-slate-100 truncate text-base">{user.email}</p>
+                                        <p className="font-semibold text-slate-800 dark:text-slate-100 truncate text-base">{user.email}</p>
                                         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Joined {new Date(user.created_at).toLocaleDateString()}</p>
                                     </div>
                                 </div>
                                 <div className="text-sm text-slate-600 dark:text-slate-300 mb-4 flex flex-col gap-2">
                                     <div className="flex justify-between items-center">
                                         <span className="font-semibold text-slate-400">Role</span>
-                                        <select 
+                                        <select disabled={!canManage}
                                             value={user.role} 
                                             onChange={(e) => handleUserUpdate(user.id, 'role', e.target.value)}
-                                            className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-sm font-bold text-slate-700 dark:text-slate-200 focus:outline-none"
+                                            className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-sm font-semibold text-slate-700 dark:text-slate-200 focus:outline-none"
                                         >
                                             <option value="SUPER_ADMIN">SUPER_ADMIN</option>
                                             <option value="HEADMASTER">HEADMASTER</option>
@@ -181,10 +184,10 @@ const UserList = () => {
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="font-semibold text-slate-400">Status</span>
-                                        <select 
+                                        <select disabled={!canManage}
                                             value={user.is_active ? '1' : '0'} 
                                             onChange={(e) => handleUserUpdate(user.id, 'is_active', parseInt(e.target.value))}
-                                            className={`bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-sm font-bold focus:outline-none ${user.is_active ? 'text-emerald-700' : 'text-red-700'}`}
+                                            className={`bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-sm font-semibold focus:outline-none ${user.is_active ? 'text-emerald-700' : 'text-red-700'}`}
                                         >
                                             <option value="1">Active</option>
                                             <option value="0">Disabled</option>
@@ -192,7 +195,7 @@ const UserList = () => {
                                     </div>
                                 </div>
                                 <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-700/50 pt-3 mt-1">
-                                    <button onClick={() => handleDelete(user.id)} className="px-4 py-2 text-sm font-bold text-red-600 bg-red-50 rounded-lg w-full">Delete</button>
+                                    <button disabled={!canManage} onClick={() => handleDelete(user.id)} className="px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 rounded-lg w-full">Delete</button>
                                 </div>
                             </div>
                         ))

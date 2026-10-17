@@ -33,7 +33,7 @@ const StudentResults = () => {
 
     if (loading) {
         return (
-            <div className="p-6 lg:p-10 flex justify-center items-center h-full min-h-[400px]">
+        <div className="page flex justify-center items-center h-full min-h-[400px]">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
             </div>
         );
@@ -88,10 +88,10 @@ const StudentResults = () => {
         }));
 
     return (
-        <div className="p-4 md:p-6 lg:p-10 max-w-7xl mx-auto space-y-8">
+        <div className="page space-y-8">
             {/* Header */}
             <div className="mb-8">
-                <h1 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">
+                <h1 className="text-3xl font-semibold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">
                     <IconReportAnalytics size={36} className="text-primary-600" />
                     My Results & Analysis
                 </h1>
@@ -105,10 +105,10 @@ const StudentResults = () => {
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-indigo-400 text-white flex items-center justify-center mb-4 shadow-lg">
                         <IconTrendingUp size={24} />
                     </div>
-                    <p className="text-4xl font-extrabold text-slate-800 dark:text-slate-100 mb-1">
+                    <p className="text-4xl font-semibold text-slate-800 dark:text-slate-100 mb-1">
                         {totalAssessments > 0 ? overallAverage.toFixed(1) : '--'}%
                     </p>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overall Average</span>
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Overall Average</span>
                 </div>
 
                 <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6 relative overflow-hidden group">
@@ -116,10 +116,10 @@ const StudentResults = () => {
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-400 text-white flex items-center justify-center mb-4 shadow-lg">
                         <IconTrophy size={24} />
                     </div>
-                    <p className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 mb-1 truncate">
+                    <p className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-1 truncate">
                         {bestSubject.name}
                     </p>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Best Subject ({bestSubject.average.toFixed(1)}%)</span>
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Best Subject ({bestSubject.average.toFixed(1)}%)</span>
                 </div>
 
                 <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6 relative overflow-hidden group">
@@ -127,17 +127,17 @@ const StudentResults = () => {
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-400 text-white flex items-center justify-center mb-4 shadow-lg">
                         <IconBooks size={24} />
                     </div>
-                    <p className="text-4xl font-extrabold text-slate-800 dark:text-slate-100 mb-1">
+                    <p className="text-4xl font-semibold text-slate-800 dark:text-slate-100 mb-1">
                         {totalAssessments}
                     </p>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Assessments</span>
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Assessments</span>
                 </div>
             </div>
 
             {totalAssessments === 0 ? (
                 <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 rounded-3xl p-12 text-center shadow-sm">
                     <IconAward size={48} className="mx-auto text-slate-300 mb-4" />
-                    <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">No Results Found</h2>
+                    <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200">No Results Found</h2>
                     <p className="text-slate-500 dark:text-slate-400 mt-2">Your grades will appear here and graphs will automatically generate once your lecturers publish your results.</p>
                 </div>
             ) : (
@@ -145,7 +145,7 @@ const StudentResults = () => {
                     
                     {/* Performance Trend (Line Chart) */}
                     <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6 lg:col-span-2">
-                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
                             <span className="w-2 h-6 bg-primary-500 rounded-full"></span>
                             Performance Trend
                         </h3>
@@ -167,7 +167,7 @@ const StudentResults = () => {
 
                     {/* Subject Proficiency (Bar Chart) */}
                     <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6">
-                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
                             <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
                             Subject Averages
                         </h3>
@@ -190,7 +190,7 @@ const StudentResults = () => {
 
                     {/* Cognitive Mapping (Radar Chart) */}
                     <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6">
-                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
                             <span className="w-2 h-6 bg-amber-500 rounded-full"></span>
                             Skill Mapping
                         </h3>
@@ -213,14 +213,14 @@ const StudentResults = () => {
 
                     {/* Detailed Grades Table */}
                     <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6 lg:col-span-2 overflow-hidden flex flex-col">
-                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2 shrink-0">
+                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2 shrink-0">
                             <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
                             Recent Assessments
                         </h3>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-bold">
+                                    <tr className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
                                         <th className="px-6 py-4 rounded-tl-xl">Assessment</th>
                                         <th className="px-6 py-4">Subject</th>
                                         <th className="px-6 py-4">Date</th>
@@ -231,14 +231,14 @@ const StudentResults = () => {
                                 <tbody className="divide-y divide-slate-100/50 text-sm font-medium text-slate-700 dark:text-slate-200">
                                     {processedGrades.map(g => (
                                         <tr key={g.id} className="hover:bg-blue-50/30 transition-colors">
-                                            <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-100">{g.assessment_name}</td>
+                                            <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-100">{g.assessment_name}</td>
                                             <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{g.class_name}</td>
                                             <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{g.dateObj.toLocaleDateString()}</td>
-                                            <td className="px-6 py-4 text-right font-bold">
+                                            <td className="px-6 py-4 text-right font-semibold">
                                                 {g.score} <span className="text-slate-400 text-xs font-normal">/ {g.max_score}</span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
                                                     g.percentage >= 80 ? 'bg-emerald-100 text-emerald-700' :
                                                     g.percentage >= 60 ? 'bg-blue-100 text-blue-700' :
                                                     g.percentage >= 40 ? 'bg-amber-100 text-amber-700' :

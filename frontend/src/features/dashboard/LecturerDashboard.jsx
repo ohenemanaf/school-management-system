@@ -56,9 +56,9 @@ const LecturerDashboard = () => {
     };
 
     return (
-        <div className="p-4 md:p-6 lg:p-8">
+        <div className="page ">
             <div className="mb-8">
-                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{greeting()}, {user?.name || 'Lecturer'} 👋</h1>
+                <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{greeting()}, {user?.name || 'Lecturer'} 👋</h1>
                 <p className="text-sm text-slate-400 mt-1">Manage your classes and student performance.</p>
             </div>
 
@@ -74,7 +74,7 @@ const LecturerDashboard = () => {
                             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{stat.label}</span>
                             <div className={`p-1.5 rounded-lg ${stat.color}`}>{stat.icon}</div>
                         </div>
-                        <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{stat.value}</p>
+                        <p className="text-2xl font-semibold text-slate-800 dark:text-slate-100">{stat.value}</p>
                     </div>
                 ))}
             </div>
@@ -98,7 +98,7 @@ const LecturerDashboard = () => {
                 <div className="lg:col-span-2 flex flex-col gap-6">
                     <div className="bg-primary-600 rounded-xl p-5 text-white shadow-lg shadow-primary-500/20 relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-4 opacity-10"><IconShieldCheck size={100} /></div>
-                        <h3 className="text-sm font-bold uppercase tracking-wider text-primary-100 mb-3 relative z-10">Gatekeeper Check-In</h3>
+                        <h3 className="text-sm font-semibold uppercase tracking-wider text-primary-100 mb-3 relative z-10">Gatekeeper Check-In</h3>
                         <p className="text-xs text-primary-200 mb-4 relative z-10">Enter the token displayed at the security gate to record your attendance for today.</p>
                         <form onSubmit={handleCheckIn} className="flex gap-2 relative z-10">
                             <input 
@@ -106,11 +106,11 @@ const LecturerDashboard = () => {
                                 value={token}
                                 onChange={e => setToken(e.target.value.toUpperCase())}
                                 placeholder="e.g. A7X9Z" 
-                                className="flex-1 bg-white dark:bg-slate-800/10 border border-white dark:border-slate-700/50/20 rounded-lg px-4 py-2 outline-none focus:bg-white dark:bg-slate-800/20 text-white font-mono uppercase font-bold placeholder-primary-300"
+                                className="flex-1 bg-white dark:bg-slate-800/10 border border-white dark:border-slate-700/50/20 rounded-lg px-4 py-2 outline-none focus:bg-white dark:bg-slate-800/20 text-white font-mono uppercase font-semibold placeholder-primary-300"
                                 maxLength={6}
                                 required
                             />
-                            <button disabled={checkingIn} type="submit" className="bg-white dark:bg-slate-800 text-primary-600 px-4 py-2 rounded-lg font-bold text-sm hover:bg-primary-50 transition-colors disabled:opacity-70 cursor-pointer">
+                            <button disabled={checkingIn} type="submit" className="bg-white dark:bg-slate-800 text-primary-600 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-primary-50 transition-colors disabled:opacity-70 cursor-pointer">
                                 {checkingIn ? '...' : 'Check In'}
                             </button>
                         </form>

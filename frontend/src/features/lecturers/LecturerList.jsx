@@ -117,19 +117,19 @@ const LecturerList = () => {
     );
 
     return (
-        <div className="p-4 md:p-6 lg:p-10 w-full overflow-hidden box-border">
+        <div className="page w-full  box-border">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Lecturers</h1>
+                    <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">Lecturers</h1>
                     <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">Manage teaching staff and departments.</p>
                 </div>
                 {isAdmin && (
                     <div className="flex gap-3 w-full md:w-auto">
-                        <button onClick={() => setIsBulkModalOpen(true)} className="flex-1 md:flex-none flex justify-center items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 px-5 py-3 rounded-xl font-bold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700">
+                        <button onClick={() => setIsBulkModalOpen(true)} className="flex-1 md:flex-none flex justify-center items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 px-5 py-3 rounded-xl font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700">
                             <IconUpload size={20} />
                             <span className="hidden md:inline">Bulk Upload</span>
                         </button>
-                        <button onClick={() => handleOpenModal()} className="flex-1 md:flex-none flex justify-center items-center gap-2 bg-[#1B437C] hover:bg-[#122e5a] text-white px-5 py-3 rounded-xl font-bold transition-colors cursor-pointer shadow-sm">
+                        <button onClick={() => handleOpenModal()} className="flex-1 md:flex-none flex justify-center items-center gap-2 bg-[#1B437C] hover:bg-[#122e5a] text-white px-5 py-3 rounded-xl font-semibold transition-colors cursor-pointer shadow-sm">
                             <IconPlus size={20} />
                             Add Lecturer
                         </button>
@@ -143,14 +143,14 @@ const LecturerList = () => {
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700/50 shadow-2xl">
                         <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
-                            <h2 className="text-xl font-extrabold text-slate-800 dark:text-slate-100">Bulk Upload Lecturers</h2>
+                            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Bulk Upload Lecturers</h2>
                             <button onClick={() => setIsBulkModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:text-slate-300 transition-colors cursor-pointer">
                                 <IconX size={24} />
                             </button>
                         </div>
                         <div className="p-8">
                             <div className="mb-6 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                                <h3 className="font-bold text-blue-800 text-sm mb-2 flex items-center gap-2">
+                                <h3 className="font-semibold text-blue-800 text-sm mb-2 flex items-center gap-2">
                                     <IconFileSpreadsheet size={18} />
                                     CSV Format Required
                                 </h3>
@@ -168,7 +168,7 @@ const LecturerList = () => {
                                         accept=".csv"
                                         ref={fileInputRef}
                                         onChange={(e) => setCsvFile(e.target.files[0])}
-                                        className="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 transition-colors cursor-pointer"
+                                        className="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 transition-colors cursor-pointer"
                                     />
                                 </label>
                                 {csvFile && (
@@ -180,11 +180,11 @@ const LecturerList = () => {
                             </div>
                         </div>
                         <div className="px-8 py-5 border-t border-slate-100 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
-                            <button onClick={() => setIsBulkModalOpen(false)} className="px-6 py-2.5 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors cursor-pointer">Cancel</button>
+                            <button onClick={() => setIsBulkModalOpen(false)} className="px-6 py-2.5 rounded-xl font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors cursor-pointer">Cancel</button>
                             <button 
                                 onClick={handleBulkUpload} 
                                 disabled={!csvFile || isUploading} 
-                                className="px-6 py-2.5 rounded-xl font-bold text-white bg-[#1B437C] hover:bg-[#122e5a] transition-colors disabled:opacity-70 cursor-pointer flex items-center gap-2"
+                                className="px-6 py-2.5 rounded-xl font-semibold text-white bg-[#1B437C] hover:bg-[#122e5a] transition-colors disabled:opacity-70 cursor-pointer flex items-center gap-2"
                             >
                                 {isUploading ? (
                                     <>Uploading...</>
@@ -205,7 +205,7 @@ const LecturerList = () => {
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] border border-slate-100 dark:border-slate-700/50">
                         <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
-                            <h2 className="text-xl font-extrabold text-slate-800 dark:text-slate-100">
+                            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
                                 {editLecturerId ? 'Edit Lecturer' : 'Add New Lecturer'}
                             </h2>
                             <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:text-slate-300 transition-colors cursor-pointer">
@@ -215,28 +215,28 @@ const LecturerList = () => {
                         <div className="p-8 overflow-y-auto">
                             <form id="lecturerForm" onSubmit={handleSubmit} className="flex flex-col gap-5">
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">Email Address</label>
+                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Email Address</label>
                                     <input required type="email" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-[#1B437C] outline-none font-medium text-slate-800 dark:text-slate-100" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                                 </div>
                                 {!editLecturerId && (
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">Initial Password</label>
+                                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Initial Password</label>
                                         <input required type="password" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-[#1B437C] outline-none font-medium text-slate-800 dark:text-slate-100" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
                                     </div>
                                 )}
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">Department</label>
+                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Department</label>
                                     <input required type="text" placeholder="e.g. Mathematics" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-[#1B437C] outline-none font-medium text-slate-800 dark:text-slate-100" value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})} />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">Hire Date</label>
+                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Hire Date</label>
                                     <input required type="date" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-[#1B437C] outline-none font-medium text-slate-800 dark:text-slate-100" value={formData.hireDate} onChange={e => setFormData({...formData, hireDate: e.target.value})} />
                                 </div>
                             </form>
                         </div>
                         <div className="px-8 py-5 border-t border-slate-100 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
-                            <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors cursor-pointer">Cancel</button>
-                            <button form="lecturerForm" type="submit" disabled={isSubmitting} className="px-6 py-2.5 rounded-xl font-bold text-white bg-[#1B437C] hover:bg-[#122e5a] transition-colors disabled:opacity-70 cursor-pointer">
+                            <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 rounded-xl font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors cursor-pointer">Cancel</button>
+                            <button form="lecturerForm" type="submit" disabled={isSubmitting} className="px-6 py-2.5 rounded-xl font-semibold text-white bg-[#1B437C] hover:bg-[#122e5a] transition-colors disabled:opacity-70 cursor-pointer">
                                 {isSubmitting ? 'Saving...' : (editLecturerId ? 'Update Lecturer' : 'Save Lecturer')}
                             </button>
                         </div>
@@ -258,7 +258,7 @@ const LecturerList = () => {
                 <div className="hidden md:block overflow-x-auto w-full">
                     <table className="w-full text-left border-collapse min-w-[600px]">
                         <thead>
-                            <tr className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-bold">
+                            <tr className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
                                 <th className="px-6 py-4">Lecturer</th>
                                 <th className="px-6 py-4">Department</th>
                                 <th className="px-6 py-4">Hire Date</th>
@@ -278,12 +278,12 @@ const LecturerList = () => {
                                             <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
                                                 <IconUser size={20} />
                                             </div>
-                                            <span className="font-bold text-slate-800 dark:text-slate-100">{lecturer.email}</span>
+                                            <span className="font-semibold text-slate-800 dark:text-slate-100">{lecturer.email}</span>
                                         </td>
                                         <td className="px-6 py-4">{lecturer.department}</td>
                                         <td className="px-6 py-4">{lecturer.hire_date ? new Date(lecturer.hire_date).toLocaleDateString() : 'N/A'}</td>
                                         <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${lecturer.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${lecturer.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
                                                 {lecturer.is_active ? 'Active' : 'Inactive'}
                                             </span>
                                         </td>
@@ -316,7 +316,7 @@ const LecturerList = () => {
                                         <IconUser size={20} />
                                     </div>
                                     <div className="overflow-hidden">
-                                        <p className="font-bold text-slate-800 dark:text-slate-100 truncate text-base">{lecturer.email}</p>
+                                        <p className="font-semibold text-slate-800 dark:text-slate-100 truncate text-base">{lecturer.email}</p>
                                         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{lecturer.department}</p>
                                     </div>
                                 </div>
@@ -326,8 +326,8 @@ const LecturerList = () => {
                                 </div>
                                 {isAdmin && (
                                     <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-700/50 pt-3 mt-1">
-                                        <button onClick={() => handleOpenModal(lecturer)} className="px-4 py-2 text-sm font-bold text-primary-600 bg-primary-50 rounded-lg cursor-pointer">Edit</button>
-                                        <button onClick={() => handleDelete(lecturer.id)} className="px-4 py-2 text-sm font-bold text-red-600 bg-red-50 rounded-lg cursor-pointer">Delete</button>
+                                        <button onClick={() => handleOpenModal(lecturer)} className="px-4 py-2 text-sm font-semibold text-primary-600 bg-primary-50 rounded-lg cursor-pointer">Edit</button>
+                                        <button onClick={() => handleDelete(lecturer.id)} className="px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 rounded-lg cursor-pointer">Delete</button>
                                     </div>
                                 )}
                             </div>
