@@ -3,16 +3,21 @@ const db = require('../../config/db');
 class StatsController {
     static async getDashboardStats(req, res) {
         try {
-            const [students] = await db.execute('SELECT COUNT(*) as count FROM students');
-            const [lecturers] = await db.execute('SELECT COUNT(*) as count FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = "LECTURER" AND u.is_active = 1');
-            const [groups] = await db.execute('SELECT COUNT(*) as count FROM student_groups');
-            const [attendance] = await db.execute('SELECT AVG(CASE WHEN status = "PRESENT" THEN 100 ELSE 0 END) as avg_att FROM attendance');
-            
+            // One round trip instead of four.
+            const [[row]] = await db.execute(`
+                SELECT
+                    (SELECT COUNT(*) FROM students) AS total_students,
+                    (SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id
+                      WHERE r.name = 'LECTURER' AND u.is_active = 1) AS active_lecturers,
+                    (SELECT COUNT(*) FROM student_groups) AS total_groups,
+                    (SELECT AVG(status = 'Present') * 100 FROM attendance) AS avg_attendance
+            `);
+
             res.json({
-                totalStudents: students[0].count,
-                activeLecturers: lecturers[0].count,
-                totalGroups: groups[0].count,
-                avgAttendance: attendance[0].avg_att ? Math.round(attendance[0].avg_att) + '%' : '0%'
+                totalStudents: row.total_students,
+                activeLecturers: row.active_lecturers,
+                totalGroups: row.total_groups,
+                avgAttendance: row.avg_attendance ? Math.round(row.avg_attendance) + '%' : '0%'
             });
         } catch (error) {
             console.error('Error fetching stats:', error);

@@ -24,7 +24,7 @@ const StaffAttendance = () => {
 
     const fetchAttendance = async () => {
         try {
-            const endpoint = isAdmin ? '/lecturer-attendance' : `/lecturer-attendance/${user.id}`;
+            const endpoint = isAdmin ? '/lecturer-attendance' : '/lecturer-attendance/me';
             const response = await api.get(endpoint);
             setAttendance(response.data);
             

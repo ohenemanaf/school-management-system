@@ -28,10 +28,8 @@ const LecturerDashboard = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const lecturersRes = await api.get('/lecturers');
-                const me = lecturersRes.data.find(t => t.email === user?.email);
-                if (me) {
-                    const response = await api.get(`/timetable?lecturer_id=${me.id}`);
+                if (user?.lecturerId) {
+                    const response = await api.get(`/timetable?lecturer_id=${user.lecturerId}`);
                     const uniqueGroups = new Set(response.data.map(t => t.student_group_id)).size;
                     setStats({ myClasses: uniqueGroups, totalStudents: 0 });
                 } else {

@@ -24,7 +24,7 @@ const fileFilter = (req, file, cb) => {
     if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
         cb(null, true);
     } else {
-        cb(new Error('Invalid file type. Only JPEG, PNG and JPG are allowed.'), false);
+        cb(Object.assign(new Error('Invalid file type. Only JPEG, PNG and JPG are allowed.'), { status: 400 }), false);
     }
 };
 

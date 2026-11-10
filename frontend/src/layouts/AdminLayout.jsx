@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -41,9 +41,16 @@ const AdminLayout = () => {
     useEffect(() => {
         if (user) {
             fetchNotifications();
-            // Polling for notifications every 30s
-            const interval = setInterval(fetchNotifications, 30000);
-            return () => clearInterval(interval);
+            // Poll every 60s, but only while the tab is visible; refresh on return.
+            const interval = setInterval(() => {
+                if (document.visibilityState === 'visible') fetchNotifications();
+            }, 60000);
+            const onVisible = () => { if (document.visibilityState === 'visible') fetchNotifications(); };
+            document.addEventListener('visibilitychange', onVisible);
+            return () => {
+                clearInterval(interval);
+                document.removeEventListener('visibilitychange', onVisible);
+            };
         }
     }, [user]);
 
@@ -276,7 +283,9 @@ const AdminLayout = () => {
                 {/* Page Content */}
                 <div className="page-scroll flex-1 min-h-0 min-w-0 overflow-y-auto">
                     <div className={`w-full ${isBoxed ? 'max-w-7xl mx-auto' : ''}`}>
-                        <Outlet />
+                        <Suspense fallback={<div className="p-10 text-sm text-slate-500 dark:text-slate-400">Loading…</div>}>
+                            <Outlet />
+                        </Suspense>
                     </div>
                 </div>
             </main>

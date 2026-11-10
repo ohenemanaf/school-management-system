@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import api from '../../utils/api';
+import api, { fileUrl } from '../../utils/api';
 import { 
     IconSettings, IconUserCircle, IconBell, IconShieldLock, 
     IconSun, IconMoon, IconTextDirectionLtr, IconTextDirectionRtl,
@@ -15,7 +15,7 @@ const Settings = () => {
 
     const getAvatarUrl = () => {
         if (user?.profileImageUrl) {
-            return `http://localhost:5000${user.profileImageUrl}`;
+            return fileUrl(user.profileImageUrl);
         }
         if (user?.role === 'STUDENT') {
             const gender = user?.gender?.toLowerCase() === 'female' ? 'girl' : 'boy';
@@ -80,8 +80,8 @@ const Settings = () => {
         if (passwordForm.newPassword !== passwordForm.confirmPassword) {
             return toast.error("New passwords do not match.");
         }
-        if (passwordForm.newPassword.length < 6) {
-            return toast.error("Password must be at least 6 characters.");
+        if (passwordForm.newPassword.length < 12) {
+            return toast.error("Password must be at least 12 characters.");
         }
         
         setIsSaving(true);

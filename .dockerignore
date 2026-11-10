@@ -1,0 +1,16 @@
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+**/.git
+**/*.log
+**/*.zip
+**/*.pem
+**/*.key
+.vscode
+.idea
+backend/public/uploads
+backend/migrate*.js
+backend/seed_mock_data.js
+CLEANUP.md
+artifacts

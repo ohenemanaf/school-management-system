@@ -44,7 +44,9 @@ const Login = () => {
         try {
             const loggedInUser = await login(email, password);
             toast.success('Welcome back!');
-            if (loggedInUser?.role === 'GATEKEEPER') {
+            if (loggedInUser?.mustChangePassword) {
+                navigate('/change-password');
+            } else if (loggedInUser?.role === 'GATEKEEPER') {
                 navigate('/gatekeeper');
             } else {
                 navigate('/admin');

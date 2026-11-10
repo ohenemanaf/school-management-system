@@ -8,10 +8,12 @@ router.use(authenticateToken);
 // Admin can see all records
 router.get('/', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN']), LecturerAttendanceController.getAll);
 
-// Admin and the specific lecturer can see lecturer's records
-router.get('/:lecturerId', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER']), LecturerAttendanceController.getByLecturer);
+// A lecturer sees only their own records
+router.get('/me', requireRole(['LECTURER']), LecturerAttendanceController.getMine);
 
-// Admin and Lecturer can mark attendance (e.g. clock in)
-router.post('/', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER']), LecturerAttendanceController.mark);
+router.get('/:lecturerId', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN']), LecturerAttendanceController.getByLecturer);
+
+// Lecturers record their own presence through the gate-token check-in, never directly
+router.post('/', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN']), LecturerAttendanceController.mark);
 
 module.exports = router;

@@ -221,7 +221,7 @@ const LecturerList = () => {
                                 {!editLecturerId && (
                                     <div>
                                         <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Initial Password</label>
-                                        <input required type="password" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-[#1B437C] outline-none font-medium text-slate-800 dark:text-slate-100" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
+                                        <input required minLength={12} type="password" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-[#1B437C] outline-none font-medium text-slate-800 dark:text-slate-100" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
                                     </div>
                                 )}
                                 <div>

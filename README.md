@@ -2,6 +2,10 @@
 
 A role-based school administration app built with React, Vite and Tailwind CSS, backed by Express and MySQL. Includes student and lecturer management, programs, courses, groups, rooms, timetables, attendance, grades, materials, finance, library and notifications.
 
+## Simple deployment
+
+For a submission package and fresh installation, follow [DEPLOYMENT.md](DEPLOYMENT.md). Docker Compose builds the app, initializes MySQL, creates the first super administrator and preserves uploaded files.
+
 ## Requirements
 
 - Node.js 22.12 or newer (a supported LTS release is recommended)
@@ -16,11 +20,13 @@ A role-based school administration app built with React, Vite and Tailwind CSS, 
 4. Run `npm run dev` in `backend` (default: http://localhost:5000). The health endpoint is `/api/health`.
 5. In `frontend`, run `npm ci`, copy `.env.example` to `.env`, and run `npm run dev`. Open the local URL printed by Vite (normally http://localhost:5173).
 
-The frontend reads `VITE_API_URL`, defaulting to `http://localhost:5000/api`. SMTP configuration is optional for local development; the existing backend attempts to create an Ethereal test mail account if SMTP is unset.
+The frontend reads `VITE_API_URL`, defaulting to `/api`. Vite proxies local API and upload requests to port 5000; the deployed app serves both from the same origin. SMTP configuration is optional for local development; the existing backend attempts to create an Ethereal test mail account if SMTP is unset.
 
 ## Checks
 
-Run `npm run lint` and `npm run build` in `frontend`. Lint currently includes existing non-blocking warnings. The backend does not currently have an automated regression test suite; `npm test` is an explicit failing placeholder. Backend source is checked for JavaScript syntax. The initial schema must be verified on a disposable database before a new deployment.
+Run `npm run lint` and `npm run build` in `frontend`. Lint currently includes existing non-blocking warnings.
+
+Run `npm test` in `backend`. The tests exercise the API (authentication, role access, validation, imports) against a scripted fake database, so they need no MySQL server; they do not prove the SQL itself, so the schema and queries must still be checked on a disposable database before a new deployment.
 
 ## Repository structure
 
@@ -32,8 +38,11 @@ Run `npm run lint` and `npm run build` in `frontend`. Lint currently includes ex
 
 ## Version control
 
-Commit application source, package manifests and the backend/frontend lockfiles. Environment secrets, dependencies, build output, editor settings and uploaded user files are ignored. Legacy migration scripts have been removed; existing databases require a separately reviewed upgrade plan. Obsolete bulk styling scripts and unused starter assets have been removed.
+Commit application source, package manifests and the backend/frontend lockfiles. Environment secrets, dependencies, build output, editor settings and uploaded user files are ignored. Legacy migration scripts have been removed. Databases created from an earlier `schema.sql` need the additive scripts in `backend/upgrades/` (run each once, in order, after a backup); new installations already include them. Obsolete bulk styling scripts and unused starter assets have been removed.
 
 ## Account security
+
+Accounts created by an administrator or a CSV import get a temporary password and must choose their own (12+ characters) before using anything else. Deactivating, deleting or changing the role of an account takes effect on its next request. Failed logins, registrations and gate check-ins are rate limited per address or lecturer. Set `ALLOW_PUBLIC_REGISTRATION=false` to remove self-service student sign-up.
+
 
 Public registration only creates student accounts. Administrators can view the system-user list; only super administrators can change roles, account status or delete accounts. Keep `.env` private. The initial bootstrap credentials and JWT secret must be configured before deployment.

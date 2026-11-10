@@ -1,5 +1,5 @@
-const bcrypt = require('bcryptjs');
 const LecturerModel = require('./lecturers.model');
+const { validatePassword, hashPassword } = require('../../utils/passwords');
 
 class LecturerController {
     static async getAll(req, res) {
@@ -15,9 +15,13 @@ class LecturerController {
     static async create(req, res) {
         try {
             const { email, password, department, hireDate } = req.body;
-            const salt = await bcrypt.genSalt(10);
-            const passwordHash = await bcrypt.hash(password, salt);
-            
+            if (typeof email !== 'string' || !email.includes('@') || !department) {
+                return res.status(400).json({ message: 'Email and department are required' });
+            }
+            const passwordError = validatePassword(password);
+            if (passwordError) return res.status(400).json({ message: passwordError });
+            const passwordHash = await hashPassword(password);
+
             const id = await LecturerModel.create({ email, passwordHash, department, hireDate });
             res.status(201).json({ message: 'Lecturer created successfully', id });
         } catch (error) {

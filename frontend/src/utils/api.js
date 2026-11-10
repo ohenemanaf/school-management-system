@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+    baseURL: import.meta.env.VITE_API_URL || '/api',
 });
 
 api.interceptors.request.use((config) => {
@@ -18,9 +18,20 @@ api.interceptors.response.use(
         if (error.response && error.response.status === 401) {
             localStorage.removeItem('token');
             window.location.href = '/login';
+        } else if (error.response?.status === 403 && error.response.data?.code === 'PASSWORD_CHANGE_REQUIRED'
+            && window.location.pathname !== '/change-password') {
+            window.location.href = '/change-password';
         }
         return Promise.reject(error);
     }
 );
+
+// Uploaded files share the API origin, including when hosted behind HTTPS.
+export const fileUrl = (value) => {
+    if (!value) return '';
+    if (/^https?:\/\//i.test(value)) return value;
+    const origin = new URL(api.defaults.baseURL, window.location.origin).origin;
+    return new URL(value.startsWith('/') ? value : `/${value}`, origin).href;
+};
 
 export default api;

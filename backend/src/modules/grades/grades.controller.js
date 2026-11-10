@@ -24,7 +24,16 @@ class GradesController {
 
     static async create(req, res) {
         try {
-            const id = await GradesModel.create(req.body);
+            const { studentId, studentGroupId, assessmentName } = req.body;
+            const score = Number(req.body.score);
+            const maxScore = Number(req.body.maxScore);
+            if (!studentId || !studentGroupId || !assessmentName) {
+                return res.status(400).json({ message: 'Student, group and assessment name are required' });
+            }
+            if (!Number.isFinite(score) || !Number.isFinite(maxScore) || maxScore <= 0 || score < 0 || score > maxScore) {
+                return res.status(400).json({ message: 'Score must be between 0 and the maximum score' });
+            }
+            const id = await GradesModel.create({ studentId, studentGroupId, assessmentName, score, maxScore });
             res.status(201).json({ message: 'Grade saved successfully', id });
         } catch (error) {
             console.error('Error saving grade:', error);

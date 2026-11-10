@@ -1,33 +1,38 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import AdminLayout from './layouts/AdminLayout';
 import Login from './features/auth/Login';
-import Dashboard from './features/dashboard/Dashboard';
-import StudentList from './features/students/StudentList';
-import UserList from './features/users/UserList';
-import Settings from './features/settings/Settings';
-import LecturerList from './features/lecturers/LecturerList';
-import RoomList from './features/rooms/RoomList';
-import StudentGroupList from './features/student_groups/StudentGroupList';
-import AttendancePortal from './features/attendance/AttendancePortal';
-import Gradebook from './features/grades/Gradebook';
-import MaterialUpload from './features/materials/MaterialUpload';
-import StaffAttendance from './features/attendance/StaffAttendance';
-import Timetable from './features/timetable/Timetable';
-import GatekeeperDashboard from './features/attendance/GatekeeperDashboard';
-import BroadcastCenter from './features/notifications/BroadcastCenter';
-import StudentResults from './features/results/StudentResults';
-import FinanceDashboard from './features/finance/FinanceDashboard';
-import LibraryDashboard from './features/library/LibraryDashboard';
-import CourseList from './features/courses/CourseList';
-import ProgramList from './features/programs/ProgramList';
+import ForcePasswordChange from './features/auth/ForcePasswordChange';
+
+// Pages load on demand so the first screen does not download every feature (charts, finance, library...).
+const Dashboard = lazy(() => import('./features/dashboard/Dashboard'));
+const StudentList = lazy(() => import('./features/students/StudentList'));
+const UserList = lazy(() => import('./features/users/UserList'));
+const Settings = lazy(() => import('./features/settings/Settings'));
+const LecturerList = lazy(() => import('./features/lecturers/LecturerList'));
+const RoomList = lazy(() => import('./features/rooms/RoomList'));
+const StudentGroupList = lazy(() => import('./features/student_groups/StudentGroupList'));
+const AttendancePortal = lazy(() => import('./features/attendance/AttendancePortal'));
+const Gradebook = lazy(() => import('./features/grades/Gradebook'));
+const MaterialUpload = lazy(() => import('./features/materials/MaterialUpload'));
+const StaffAttendance = lazy(() => import('./features/attendance/StaffAttendance'));
+const Timetable = lazy(() => import('./features/timetable/Timetable'));
+const GatekeeperDashboard = lazy(() => import('./features/attendance/GatekeeperDashboard'));
+const BroadcastCenter = lazy(() => import('./features/notifications/BroadcastCenter'));
+const StudentResults = lazy(() => import('./features/results/StudentResults'));
+const FinanceDashboard = lazy(() => import('./features/finance/FinanceDashboard'));
+const LibraryDashboard = lazy(() => import('./features/library/LibraryDashboard'));
+const CourseList = lazy(() => import('./features/courses/CourseList'));
+const ProgramList = lazy(() => import('./features/programs/ProgramList'));
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
+  if (user.mustChangePassword) return <Navigate to="/change-password" replace />;
   return children;
 };
 
@@ -46,9 +51,11 @@ function App() {
       <ThemeProvider>
         <Router>
           <Toaster position="top-right" />
+          <Suspense fallback={null}>
           <Routes>
             <Route path="/" element={<Navigate to="/admin" replace />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/change-password" element={<ForcePasswordChange />} />
             
             <Route path="/gatekeeper" element={
               <ProtectedRoute>
@@ -81,6 +88,7 @@ function App() {
               <Route path="library" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LIBRARIAN', 'STUDENT', 'LECTURER']}><LibraryDashboard /></RequireRole>} />
             </Route>
           </Routes>
+          </Suspense>
         </Router>
       </ThemeProvider>
     </AuthProvider>

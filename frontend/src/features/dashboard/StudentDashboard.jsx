@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
-import api from '../../utils/api';
+import api, { fileUrl } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { IconSchool, IconBooks, IconChartBar, IconCalendarTime, IconReportAnalytics, IconArrowRight, IconId, IconMail, IconFileInvoice, IconDownload, IconCash } from '@tabler/icons-react';
 
@@ -18,18 +18,20 @@ const StudentDashboard = () => {
     useEffect(() => {
         const fetchStudentData = async () => {
             try {
-                const [invoicesRes, assignmentsRes, timetableRes, gradesRes, attendanceRes] = await Promise.all([
+                const timetableUrl = user?.studentGroupId ? `/timetable?student_group_id=${user.studentGroupId}` : '/timetable';
+                // allSettled: one failing section should not blank the whole dashboard.
+                const results = await Promise.allSettled([
                     api.get('/finance/invoices'),
                     api.get('/library/assignments'),
-                    api.get('/timetable'),
+                    api.get(timetableUrl),
                     api.get('/grades'),
                     api.get('/attendance')
                 ]);
-                setInvoices(invoicesRes.data);
-                setAssignments(assignmentsRes.data);
-                setTimetable(timetableRes.data);
-                setGrades(gradesRes.data);
-                setAttendance(attendanceRes.data);
+                const setters = [setInvoices, setAssignments, setTimetable, setGrades, setAttendance];
+                results.forEach((result, i) => {
+                    if (result.status === 'fulfilled') setters[i](result.value.data);
+                    else console.error('Error fetching student data:', result.reason);
+                });
             } catch (error) {
                 console.error('Error fetching student data:', error);
             } finally {
@@ -74,7 +76,7 @@ const StudentDashboard = () => {
     // Calculate avatar URL fallback if not uploaded
     const getAvatarUrl = () => {
         if (user?.profileImageUrl) {
-            return user.profileImageUrl.startsWith('http') ? user.profileImageUrl : `http://localhost:5000${user.profileImageUrl}`;
+            return fileUrl(user.profileImageUrl);
         }
         const gender = user?.gender?.toLowerCase() === 'female' ? 'girl' : 'boy';
         const nameParam = user?.name ? user.name.replace(' ', '+') : 'Student';
@@ -241,7 +243,7 @@ const StudentDashboard = () => {
                                             </div>
                                             {item.pdf_url ? (
                                                 <a 
-                                                    href={`http://localhost:5000${item.pdf_url}`}
+                                                    href={fileUrl(item.pdf_url)}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-200 transition-colors shrink-0"

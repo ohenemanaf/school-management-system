@@ -19,19 +19,18 @@ const MaterialUpload = () => {
     }, []);
 
     const fetchData = async () => {
+        if (user?.role === 'STUDENT') return; // students only read materials
         try {
-            const [groupsRes, lecturersRes] = await Promise.all([
-                api.get('/student-groups'),
-                api.get('/lecturers')
-            ]);
+            const groupsRes = await api.get('/student-groups');
             setStudentGroupsList(groupsRes.data);
-            setLecturersList(lecturersRes.data);
-            
+
             if (user?.role === 'LECTURER') {
-                const me = lecturersRes.data.find(t => t.email === user.email);
-                if (me) {
-                    setForm(prev => ({ ...prev, lecturerId: me.id.toString() }));
-                }
+                // Lecturers cannot list all staff; they always upload as themselves.
+                setLecturersList([{ id: user.lecturerId, email: user.email, department: 'You' }]);
+                setForm(prev => ({ ...prev, lecturerId: String(user.lecturerId ?? '') }));
+            } else {
+                const lecturersRes = await api.get('/lecturers');
+                setLecturersList(lecturersRes.data);
             }
         } catch (error) {
             console.error('Failed to load form data', error);
