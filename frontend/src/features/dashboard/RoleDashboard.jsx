@@ -8,8 +8,8 @@ import {
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { can } from '../../config/permissions';
-import { formatCurrency, formatPercent, formatDate } from '../../utils/format';
-import { greeting, Tile, TileRow, Card, CardLink, Empty, AttendanceChip, List, ListRow, Meter } from './DashboardParts';
+import { formatCurrency, formatPercent, formatDate, greeting } from '../../utils/format';
+import { Tile, TileRow, Card, CardLink, Empty, AttendanceChip, List, ListRow, Meter } from './DashboardParts';
 
 // Home screen for super admin, admin, headmaster, accountant and librarian.
 // The API decides which sections each role gets (see dashboard.controller.js);
@@ -265,10 +265,10 @@ const RoleDashboard = () => {
     const s = data?.sections || {};
     const canSeeRecords = can(user, 'finance.records');
     const cards = [
-        s.accounts && <Accounts data={s.accounts} />,
-        s.academic && <Academic data={s.academic} />,
-        s.staff && <Staff data={s.staff} />,
-        s.financeTotals && <FinanceTotals data={s.financeTotals} canSeeRecords={canSeeRecords} />,
+        s.accounts && <Accounts key="accounts" data={s.accounts} />,
+        s.academic && <Academic key="academic" data={s.academic} />,
+        s.staff && <Staff key="staff" data={s.staff} />,
+        s.financeTotals && <FinanceTotals key="finance" data={s.financeTotals} canSeeRecords={canSeeRecords} />,
     ].filter(Boolean);
 
     return (

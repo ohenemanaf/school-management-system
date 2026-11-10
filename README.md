@@ -34,6 +34,21 @@ Run `npm test` in `backend`. The tests exercise the API (authentication, role ac
 MYSQL_TEST_HOST=127.0.0.1 MYSQL_TEST_PORT=3307 MYSQL_TEST_USER=root MYSQL_TEST_PASSWORD= npm run test:mysql
 ```
 
+## Timetable generator and reminders
+
+Super admins and admins get **Timetable Generator** in the menu. Work through its tabs in order:
+
+1. **Calendar**: add the term (mark it current), its exam periods with alert days (e.g. `14,7,1`), and the bell schedule of lessons and breaks.
+2. **Classes & streams**: create streams such as Gold and Diamond and give each class its stream.
+3. **Subjects & teachers**: mark heavy subjects; give each teacher a skill level per subject (1 can teach, 2 good, 3 specialist) and weekly/daily period limits.
+4. **Allocations**: per class, the subjects and periods a week for the term; optionally fix a teacher. Copy one class's subjects to its sister streams.
+5. **Generate**: builds a clash-free draft (no class, teacher or room double-booked; teacher limits respected; heavy subjects kept to the morning; subjects spread over the week), with a report of anything that could not be placed and why. **Publish** replaces the live timetable for the allocated classes only.
+6. **Reminders**: preview or send today's reminders.
+
+Every school day at 07:00 (server time; set `TZ`, change with `REMINDER_TIME`) each student is notified of their class's lessons and each lecturer of their own; exam periods are announced on their alert days. Each reminder is sent once, even across restarts. `REMINDER_EMAILS=true` also emails them; `ENABLE_SCHEDULED_JOBS=false` turns the schedule off.
+
+To try it with demo data: `npm run seed:scheduler-demo` in `backend` (fills only empty setup, never publishes; refuses to run in production). Existing databases need `backend/upgrades/003-timetable-generator.sql`.
+
 ## Repository structure
 
 - `frontend/src/`: application screens, layout, shared styles and API client

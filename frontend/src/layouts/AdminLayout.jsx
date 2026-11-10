@@ -26,7 +26,8 @@ import {
     IconUsersGroup,
     IconBuilding,
     IconCertificate,
-    IconChartBar
+    IconChartBar,
+    IconCalendarCog
 } from '@tabler/icons-react';
 
 const AdminLayout = () => {
@@ -100,6 +101,7 @@ const AdminLayout = () => {
     const navItems = [
         { path: '/admin', label: 'Dashboard', icon: <IconDashboard size={20} />, perm: 'page.dashboard' },
         { path: '/admin/timetable', label: 'Timetable', icon: <IconCalendarEvent size={20} />, perm: 'page.timetable' },
+        { path: '/admin/scheduler', label: 'Timetable Generator', icon: <IconCalendarCog size={20} />, perm: 'page.scheduler' },
         { path: '/admin/students', label: 'Students', icon: <IconSchool size={20} />, perm: 'page.students' },
         { path: '/admin/attendance', label: 'Student Attendance', icon: <IconChecklist size={20} />, perm: 'page.attendance' },
         { path: '/admin/grades', label: 'Gradebook', icon: <IconTrophy size={20} />, perm: 'page.gradebook' },

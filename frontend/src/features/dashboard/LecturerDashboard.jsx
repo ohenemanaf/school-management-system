@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { IconBooks, IconUsers, IconCalendarEvent, IconShieldCheck, IconCircleCheck } from '@tabler/icons-react';
 import api from '../../utils/api';
+import { greeting } from '../../utils/format';
 import { useAuth } from '../../context/AuthContext';
-import { greeting, Tile, TileRow, Card, CardLink, Empty, AttendanceChip, List, ListRow } from './DashboardParts';
+import ExamBanner from '../scheduler/ExamBanner';
+import { Tile, TileRow, Card, CardLink, Empty, AttendanceChip, List, ListRow } from './DashboardParts';
 
 // A lecturer's day: check in at the gate, today's classes, and whether each
 // class's attendance has been taken.
@@ -47,6 +49,7 @@ const LecturerDashboard = () => {
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Your classes and today&apos;s teaching.</p>
             </div>
 
+            <ExamBanner />
             <div className="flex flex-col gap-6">
                 <TileRow>
                     <Tile label="My classes" value={teaching ? teaching.classes : '—'} icon={<IconBooks size={20} />} />

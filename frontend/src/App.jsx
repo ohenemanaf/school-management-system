@@ -29,6 +29,7 @@ const LibraryDashboard = lazy(() => import('./features/library/LibraryDashboard'
 const CourseList = lazy(() => import('./features/courses/CourseList'));
 const ProgramList = lazy(() => import('./features/programs/ProgramList'));
 const Performance = lazy(() => import('./features/performance/Performance'));
+const SchedulerPage = lazy(() => import('./features/scheduler/SchedulerPage'));
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -83,6 +84,7 @@ function App() {
               <Route path="rooms" element={<RequirePermission perm="page.academics"><RoomList /></RequirePermission>} />
               <Route path="settings" element={<Settings />} />
               <Route path="broadcast" element={<RequirePermission perm="page.broadcast"><BroadcastCenter /></RequirePermission>} />
+              <Route path="scheduler" element={<RequirePermission perm="page.scheduler"><SchedulerPage /></RequirePermission>} />
               <Route path="performance" element={<RequirePermission perm="page.performance"><Performance /></RequirePermission>} />
               <Route path="results" element={<RequirePermission perm="page.results"><StudentResults /></RequirePermission>} />
               <Route path="finance" element={<RequirePermission perm="page.finance"><FinanceDashboard /></RequirePermission>} />

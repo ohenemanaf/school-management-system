@@ -3,13 +3,6 @@ import { IconCircleCheck, IconClock } from '@tabler/icons-react';
 
 // Small building blocks shared by the role dashboards.
 
-export const greeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
-};
-
 export const Tile = ({ label, value, hint, icon, tone = 'bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400' }) => (
     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 rounded-xl p-4 min-w-0 shadow-sm">
         <div className="flex items-center justify-between mb-3 min-w-0 gap-2">
