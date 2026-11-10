@@ -1,4 +1,6 @@
 const TimetableModel = require('./timetable.model');
+const db = require('../../config/db');
+const { lecturerIdFor } = require('../../utils/currentProfile');
 
 class TimetableController {
     static async getAll(req, res) {
@@ -7,6 +9,16 @@ class TimetableController {
             if (req.query.student_group_id) filters.student_group_id = req.query.student_group_id;
             if (req.query.lecturer_id) filters.lecturer_id = req.query.lecturer_id;
             if (req.query.room_id) filters.room_id = req.query.room_id;
+
+            // Lecturers see their own teaching slots, students their own class only.
+            if (req.user.role === 'LECTURER') {
+                filters.lecturer_id = await lecturerIdFor(req.user.id);
+                if (!filters.lecturer_id) return res.json([]);
+            } else if (req.user.role === 'STUDENT') {
+                const [rows] = await db.execute('SELECT student_group_id FROM students WHERE user_id = ?', [req.user.id]);
+                filters.student_group_id = rows[0]?.student_group_id;
+                if (!filters.student_group_id) return res.json([]);
+            }
             
             const timetable = await TimetableModel.findAll(filters);
             res.json(timetable);

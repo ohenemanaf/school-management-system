@@ -1,7 +1,9 @@
 const crypto = require('crypto');
 const AttendanceModel = require('./attendance.model');
 const LecturerAttendanceModel = require('../lecturer_attendance/lecturer_attendance.model');
-const { lecturerIdFor, studentIdFor } = require('../../utils/currentProfile');
+const { lecturerIdFor, studentIdFor, groupScopeFor, inScope } = require('../../utils/currentProfile');
+
+const notYourClass = (res) => res.status(403).json({ message: 'You can only take attendance for the classes you teach' });
 const { localDate, localTime } = require('../../utils/dates');
 
 const STATUSES = ['Present', 'Absent', 'Late'];
@@ -25,7 +27,10 @@ class AttendanceController {
                 if (!studentId) return res.status(404).json({ message: 'Student not found' });
                 attendance = await AttendanceModel.findByStudent(studentId);
             } else {
+                const scope = await groupScopeFor(req.user);
+                if (req.query.student_group_id && !inScope(scope, req.query.student_group_id)) return notYourClass(res);
                 attendance = await AttendanceModel.findAll({
+                    scope,
                     studentGroupId: req.query.student_group_id,
                     date: req.query.date,
                     limit: req.query.limit,
@@ -45,6 +50,7 @@ class AttendanceController {
             if (!studentId || !studentGroupId || !date || !STATUSES.includes(status)) {
                 return res.status(400).json({ message: `studentId, studentGroupId, date and a status of ${STATUSES.join(', ')} are required` });
             }
+            if (!inScope(await groupScopeFor(req.user), studentGroupId)) return notYourClass(res);
             await AttendanceModel.mark(studentId, studentGroupId, date, status);
             res.json({ message: 'Attendance marked successfully' });
         } catch (error) {
@@ -68,6 +74,7 @@ class AttendanceController {
             if (records.some((r) => !r || !Number.isInteger(Number(r.studentId)) || !STATUSES.includes(r.status))) {
                 return res.status(400).json({ message: `Each record needs a studentId and a status of ${STATUSES.join(', ')}` });
             }
+            if (!inScope(await groupScopeFor(req.user), studentGroupId)) return notYourClass(res);
             const result = await AttendanceModel.markBulk(studentGroupId, date, records);
             res.json({ message: 'Attendance saved', ...result });
         } catch (error) {

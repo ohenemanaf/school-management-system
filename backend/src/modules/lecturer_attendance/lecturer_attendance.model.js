@@ -3,7 +3,7 @@ const db = require('../../config/db');
 class LecturerAttendanceModel {
     static async findAll() {
         const [rows] = await db.execute(`
-            SELECT a.*, t.department, u.email, u.is_active
+            SELECT a.*, t.first_name, t.last_name, t.department, u.email, u.is_active
             FROM lecturer_attendance a
             JOIN lecturers t ON a.lecturer_id = t.id
             JOIN users u ON t.user_id = u.id

@@ -1,17 +1,13 @@
 const express = require('express');
+const { authenticateToken, requirePermission } = require('../../core/middlewares/auth.middleware');
 const TimetableController = require('./timetable.controller');
-const { authenticateToken } = require('../../core/middlewares/auth.middleware');
-const { requireRole } = require('../../core/middlewares/auth.middleware');
 
 const router = express.Router();
-
 router.use(authenticateToken);
 
-// All users can view timetables (We restrict strictly to the 5 roles that need to see it)
-router.get('/', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER', 'STUDENT']), TimetableController.getAll);
-
-// Only ADMIN can create or delete timetable slots
-router.post('/', requireRole(['SUPER_ADMIN', 'ADMIN']), TimetableController.create);
-router.delete('/:id', requireRole(['SUPER_ADMIN', 'ADMIN']), TimetableController.delete);
+// Lecturers see their own slots and students their own class; enforced in the controller.
+router.get('/', requirePermission('timetable.view'), TimetableController.getAll);
+router.post('/', requirePermission('timetable.manage'), TimetableController.create);
+router.delete('/:id', requirePermission('timetable.manage'), TimetableController.delete);
 
 module.exports = router;

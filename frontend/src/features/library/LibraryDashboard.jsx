@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api, { fileUrl } from '../../utils/api';
+import { can } from '../../config/permissions';
 import toast from 'react-hot-toast';
 import { IconBooks, IconBook, IconPlus, IconUserCheck, IconArrowBackUp, IconSearch, IconX, IconCheck } from '@tabler/icons-react';
 
 const LibraryDashboard = () => {
     const { user } = useAuth();
-    const isLibrarianOrAdmin = ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LIBRARIAN'].includes(user?.role?.toUpperCase());
+    const canManage = can(user, 'library.manage');   // books, loans, class reading (librarian)
+    const canStats = can(user, 'library.stats');     // totals for leaders
 
     const [activeTab, setActiveTab] = useState('catalog');
     const [stats, setStats] = useState({ totalBooks: 0, borrowedBooks: 0, overdueBooks: 0 });
@@ -29,26 +31,26 @@ const LibraryDashboard = () => {
 
     useEffect(() => {
         fetchData();
-        if (isLibrarianOrAdmin) {
+        if (canManage) {
             fetchSystemUsers();
         }
-    }, [isLibrarianOrAdmin]);
+    }, [canManage]);
 
     const fetchData = async () => {
         setLoading(true);
         try {
             const [statsRes, booksRes, loansRes, assignmentsRes, classesRes] = await Promise.all([
-                isLibrarianOrAdmin ? api.get('/library/stats') : Promise.resolve({ data: {} }),
+                canStats ? api.get('/library/stats') : Promise.resolve({ data: {} }),
                 api.get('/library/books'),
                 api.get('/library/loans'),
-                isLibrarianOrAdmin ? api.get('/library/assignments') : Promise.resolve({ data: [] }),
-                isLibrarianOrAdmin ? api.get('/student-groups') : Promise.resolve({ data: [] })
+                canManage ? api.get('/library/assignments') : Promise.resolve({ data: [] }),
+                canManage ? api.get('/student-groups') : Promise.resolve({ data: [] })
             ]);
             
-            if (isLibrarianOrAdmin) setStats(statsRes.data);
+            if (canStats) setStats(statsRes.data);
             setBooks(booksRes.data);
             setLoans(loansRes.data);
-            if (isLibrarianOrAdmin) {
+            if (canManage) {
                 setAssignments(assignmentsRes.data);
                 setStudentGroups(classesRes.data);
             }
@@ -164,7 +166,7 @@ const LibraryDashboard = () => {
                     <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">Library Management</h1>
                     <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">Manage book inventory, issue books, and track returns</p>
                 </div>
-                {isLibrarianOrAdmin && (
+                {canManage && (
                     <div className="flex items-center gap-3">
                         <button 
                             onClick={() => setShowBookModal(true)}
@@ -183,7 +185,7 @@ const LibraryDashboard = () => {
             </div>
 
             {/* Stats Overview */}
-            {isLibrarianOrAdmin && (
+            {canStats && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm relative overflow-hidden group">
                         <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-4 border border-blue-100">
@@ -223,9 +225,9 @@ const LibraryDashboard = () => {
                     onClick={() => setActiveTab('circulation')}
                     className={`py-3 px-6 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'circulation' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'}`}
                 >
-                    {isLibrarianOrAdmin ? 'Circulation & Returns' : 'My Borrowed Books'}
+                    {canManage ? 'Circulation & Returns' : 'My Borrowed Books'}
                 </button>
-                {isLibrarianOrAdmin && (
+                {canManage && (
                     <button 
                         onClick={() => setActiveTab('assignments')}
                         className={`py-3 px-6 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'assignments' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'}`}
@@ -300,23 +302,23 @@ const LibraryDashboard = () => {
                             <thead>
                                 <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700/60">
                                     <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Book Title</th>
-                                    {isLibrarianOrAdmin && <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Borrower</th>}
+                                    {canManage && <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Borrower</th>}
                                     <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Issue Date</th>
                                     <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Due Date</th>
                                     <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                                    {isLibrarianOrAdmin && <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>}
+                                    {canManage && <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {loans.length === 0 ? (
                                     <tr>
-                                        <td colSpan={isLibrarianOrAdmin ? 6 : 4} className="p-8 text-center text-slate-500 dark:text-slate-400">No active book loans</td>
+                                        <td colSpan={canManage ? 6 : 4} className="p-8 text-center text-slate-500 dark:text-slate-400">No active book loans</td>
                                     </tr>
                                 ) : (
                                     loans.map(loan => (
                                         <tr key={loan.id} className="hover:bg-slate-50 dark:bg-slate-900/50 transition-colors">
                                             <td className="p-4 font-semibold text-slate-800 dark:text-slate-100">{loan.book_title}</td>
-                                            {isLibrarianOrAdmin && (
+                                            {canManage && (
                                                 <td className="p-4">
                                                     <p className="font-semibold text-slate-800 dark:text-slate-100">{loan.first_name} {loan.last_name}</p>
                                                     <p className="text-xs text-slate-500 dark:text-slate-400">{loan.role_name}</p>
@@ -325,7 +327,7 @@ const LibraryDashboard = () => {
                                             <td className="p-4 font-medium text-slate-600 dark:text-slate-300">{new Date(loan.issue_date).toLocaleDateString()}</td>
                                             <td className="p-4 font-medium text-slate-600 dark:text-slate-300">{new Date(loan.due_date).toLocaleDateString()}</td>
                                             <td className="p-4">{getStatusBadge(loan.status)}</td>
-                                            {isLibrarianOrAdmin && (
+                                            {canManage && (
                                                 <td className="p-4">
                                                     {loan.status === 'Borrowed' && (
                                                         <button 
@@ -346,7 +348,7 @@ const LibraryDashboard = () => {
                 </div>
             )}
             {/* Assignments Tab */}
-            {activeTab === 'assignments' && isLibrarianOrAdmin && (
+            {activeTab === 'assignments' && canManage && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-1">
                         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm p-6">

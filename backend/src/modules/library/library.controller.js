@@ -1,4 +1,6 @@
 const LibraryModel = require('./library.model');
+const { signFields } = require('../../utils/signedUploads');
+const { can } = require('../../config/permissions');
 
 class LibraryController {
     // === STATS ===
@@ -16,7 +18,7 @@ class LibraryController {
     static async getAllBooks(req, res) {
         try {
             const books = await LibraryModel.getAllBooks();
-            res.json(books);
+            res.json(signFields(books, 'pdf_url'));
         } catch (error) {
             console.error('Error fetching books:', error);
             res.status(500).json({ message: 'Server error' });
@@ -87,7 +89,7 @@ class LibraryController {
                 }
             }
             const assignments = await LibraryModel.getClassAssignments(studentGroupId);
-            res.json(assignments);
+            res.json(signFields(assignments, 'pdf_url'));
         } catch (error) {
             console.error('Error fetching class assignments:', error);
             res.status(500).json({ message: 'Server error' });
@@ -120,7 +122,7 @@ class LibraryController {
     static async getAllLoans(req, res) {
         try {
             // Only library managers see every loan; everyone else sees their own.
-            if (!['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LIBRARIAN'].includes(req.user.role)) {
+            if (!can(req.user.role, 'library.manage')) {
                 const loans = await LibraryModel.getLoansByUser(req.user.id);
                 return res.json(loans);
             }

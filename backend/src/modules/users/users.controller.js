@@ -4,12 +4,17 @@ const jwt = require('jsonwebtoken');
 const db = require('../../config/db');
 const { secret: jwtSecret } = require('../../config/jwt');
 const { validatePassword, hashPassword } = require('../../utils/passwords');
+const { signUploadUrl } = require('../../utils/signedUploads');
 
 async function displayNameFor(user) {
     const fallback = user.email.split('@')[0];
     if (user.role === 'STUDENT') {
         const [rows] = await db.execute('SELECT first_name, last_name FROM students WHERE user_id = ?', [user.id]);
         if (rows.length > 0) return `${rows[0].first_name} ${rows[0].last_name}`;
+    } else if (user.role === 'LECTURER') {
+        const [rows] = await db.execute('SELECT first_name, last_name FROM lecturers WHERE user_id = ?', [user.id]);
+        const full = [rows[0]?.first_name, rows[0]?.last_name].filter(Boolean).join(' ');
+        if (full) return full;
     }
     return fallback;
 }
@@ -86,15 +91,18 @@ class UserController {
 
             if (req.user.role === 'STUDENT') {
                 const [rows] = await db.execute(
-                    'SELECT id, profile_image_url, enrollment_number, gender, student_group_id FROM students WHERE user_id = ?',
+                    'SELECT id, profile_image_url, enrollment_number, gender, student_group_id, medical_conditions, blood_group FROM students WHERE user_id = ?',
                     [req.user.id]
                 );
                 if (rows.length > 0) {
                     profile.studentId = rows[0].id;
-                    profile.profileImageUrl = rows[0].profile_image_url;
+                    profile.profileImageUrl = signUploadUrl(rows[0].profile_image_url);
                     profile.enrollmentNumber = rows[0].enrollment_number;
                     profile.gender = rows[0].gender;
                     profile.studentGroupId = rows[0].student_group_id;
+                    // A student may always see their own health details.
+                    profile.medicalConditions = rows[0].medical_conditions;
+                    profile.bloodGroup = rows[0].blood_group;
                 }
             } else if (req.user.role === 'LECTURER') {
                 const [rows] = await db.execute('SELECT id FROM lecturers WHERE user_id = ?', [req.user.id]);

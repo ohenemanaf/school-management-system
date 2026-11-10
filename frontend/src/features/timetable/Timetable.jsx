@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
+import { can } from '../../config/permissions';
+import { lecturerName } from '../../utils/people';
 import { useAuth } from '../../context/AuthContext';
 import { IconCalendarEvent, IconPlus, IconX, IconTrash, IconClock } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
@@ -8,8 +10,8 @@ const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
 const Timetable = () => {
     const { user } = useAuth();
-    const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(user?.role);
-    const canListLecturers = ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'].includes(user?.role);
+    const isAdmin = can(user, 'timetable.manage');
+    const canListLecturers = can(user, 'lecturers.view');
     const isLecturer = user?.role === 'LECTURER';
     const isStudent = user?.role === 'STUDENT';
 
@@ -143,7 +145,7 @@ const Timetable = () => {
         <div className="page w-full  box-border">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">Master Timetable</h1>
+                    <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">{isLecturer ? 'My Teaching Timetable' : isStudent ? 'My Class Timetable' : 'Master Timetable'}</h1>
                     <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">Manage and view the weekly academic schedule.</p>
                 </div>
                 {isAdmin && (
@@ -154,8 +156,8 @@ const Timetable = () => {
                 )}
             </div>
 
-            {/* Filters */}
-            <div className="mb-6 flex gap-4 flex-wrap">
+            {/* Filters (lecturers and students always see their own schedule) */}
+            <div className={`mb-6 gap-4 flex-wrap ${canListLecturers ? 'flex' : 'hidden'}`}>
                 <select 
                     className="px-4 py-2 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg outline-none text-sm font-semibold text-slate-700 dark:text-slate-200 focus:border-primary-500"
                     value={filterGroup}
@@ -261,7 +263,7 @@ const Timetable = () => {
                                         <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Lecturer</label>
                                         <select required className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none font-semibold text-slate-700 dark:text-slate-200" value={formData.lecturer_id} onChange={e => setFormData({...formData, lecturer_id: e.target.value})}>
                                             <option value="">Select Lecturer</option>
-                                            {lecturers.map(t => <option key={t.id} value={t.id}>{t.email.split('@')[0]} ({t.department})</option>)}
+                                            {lecturers.map(t => <option key={t.id} value={t.id}>{lecturerName(t)} ({t.department})</option>)}
                                         </select>
                                     </div>
                                 </div>

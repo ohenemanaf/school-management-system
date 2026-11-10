@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import api from '../../utils/api';
+import api, { fileUrl } from '../../utils/api';
+import { can } from '../../config/permissions';
+import { lecturerName } from '../../utils/people';
 import { useAuth } from '../../context/AuthContext';
 import { IconDownload } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
@@ -19,7 +21,7 @@ const MaterialUpload = () => {
     }, []);
 
     const fetchData = async () => {
-        if (user?.role === 'STUDENT') return; // students only read materials
+        if (!can(user, 'materials.manage')) return; // only lecturers share materials
         try {
             const groupsRes = await api.get('/student-groups');
             setStudentGroupsList(groupsRes.data);
@@ -60,7 +62,7 @@ const MaterialUpload = () => {
         }
     };
 
-    const isStudent = user?.role === 'STUDENT';
+    const canShare = can(user, 'materials.manage');
 
     return (
         <div className="page w-full  box-border">
@@ -69,7 +71,7 @@ const MaterialUpload = () => {
                 <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">Access and distribute course content.</p>
             </div>
 
-            {!isStudent && (
+            {canShare && (
                 <div className="glass p-6 rounded-2xl md:rounded-3xl shadow-sm mb-8">
                     <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Upload Content</h2>
                     <form onSubmit={handleUpload} className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -79,7 +81,7 @@ const MaterialUpload = () => {
                         </select>
                         <select required disabled={user?.role === 'LECTURER'} value={form.lecturerId} onChange={e => setForm({...form, lecturerId: e.target.value})} className={`px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200 ${user?.role === 'LECTURER' ? 'opacity-50 cursor-not-allowed' : ''}`}>
                             <option value="">Select Lecturer</option>
-                            {lecturersList.map(t => <option key={t.id} value={t.id}>{t.email.split('@')[0]} ({t.department})</option>)}
+                            {lecturersList.map(t => <option key={t.id} value={t.id}>{lecturerName(t)} ({t.department})</option>)}
                         </select>
                         <input type="text" placeholder="Material Title" required value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200" />
                         <input type="url" placeholder="File URL Link" required value={form.fileUrl} onChange={e => setForm({...form, fileUrl: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200" />
@@ -102,7 +104,7 @@ const MaterialUpload = () => {
                             </div>
                             <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50 min-w-0">
                                 <span className="text-xs font-semibold text-slate-400 shrink-0">{new Date(mat.created_at).toLocaleDateString()}</span>
-                                <a href={mat.file_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-primary-600 bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 px-3 py-1.5 rounded-lg transition-colors shrink-0">
+                                <a href={fileUrl(mat.file_url)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-primary-600 bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 px-3 py-1.5 rounded-lg transition-colors shrink-0">
                                     <IconDownload size={16} />
                                     Open
                                 </a>

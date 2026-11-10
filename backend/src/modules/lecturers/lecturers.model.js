@@ -3,7 +3,7 @@ const db = require('../../config/db');
 class LecturerModel {
     static async findAll() {
         const [rows] = await db.execute(`
-            SELECT t.id, t.department, t.hire_date, u.email, u.is_active
+            SELECT t.id, t.first_name, t.last_name, t.department, t.hire_date, u.email, u.is_active
             FROM lecturers t
             JOIN users u ON t.user_id = u.id
         `);
@@ -11,7 +11,7 @@ class LecturerModel {
     }
 
     static async create(lecturerData) {
-        const { email, passwordHash, department, hireDate } = lecturerData;
+        const { email, passwordHash, firstName, lastName, department, hireDate } = lecturerData;
         const connection = await db.getConnection();
         
         try {
@@ -28,8 +28,8 @@ class LecturerModel {
             const userId = userResult.insertId;
             
             const [lecturerResult] = await connection.execute(
-                'INSERT INTO lecturers (user_id, department, hire_date) VALUES (?, ?, ?)',
-                [userId, department, hireDate || null]
+                'INSERT INTO lecturers (user_id, first_name, last_name, department, hire_date) VALUES (?, ?, ?, ?, ?)',
+                [userId, firstName, lastName, department, hireDate || null]
             );
             
             await connection.commit();
@@ -52,7 +52,7 @@ class LecturerModel {
     }
 
     static async update(id, lecturerData) {
-        const { email, department, hireDate } = lecturerData;
+        const { email, firstName, lastName, department, hireDate } = lecturerData;
         const connection = await db.getConnection();
         
         try {
@@ -68,8 +68,9 @@ class LecturerModel {
             );
             
             await connection.execute(
-                'UPDATE lecturers SET department = ?, hire_date = ? WHERE id = ?',
-                [department, hireDate || null, id]
+                `UPDATE lecturers SET first_name = COALESCE(?, first_name), last_name = COALESCE(?, last_name),
+                     department = ?, hire_date = ? WHERE id = ?`,
+                [firstName || null, lastName || null, department, hireDate || null, id]
             );
             
             await connection.commit();

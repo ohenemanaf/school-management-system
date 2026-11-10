@@ -13,10 +13,14 @@ const Gradebook = () => {
     const [studentsList, setStudentsList] = useState([]);
 
     useEffect(() => {
-        fetchGrades();
         fetchStudentGroups();
-        fetchStudents();
     }, []);
+
+    // Load only the chosen group's students and grades instead of the whole school.
+    useEffect(() => {
+        fetchGrades(form.studentGroupId);
+        fetchStudents(form.studentGroupId);
+    }, [form.studentGroupId]);
 
     const fetchStudentGroups = async () => {
         try {
@@ -27,18 +31,22 @@ const Gradebook = () => {
         }
     };
 
-    const fetchStudents = async () => {
+    const fetchStudents = async (groupId) => {
+        if (!groupId) {
+            setStudentsList([]);
+            return;
+        }
         try {
-            const response = await api.get('/students');
+            const response = await api.get('/students', { params: { student_group_id: groupId } });
             setStudentsList(response.data);
         } catch (error) {
             console.error('Failed to load students', error);
         }
     };
 
-    const fetchGrades = async () => {
+    const fetchGrades = async (groupId) => {
         try {
-            const response = await api.get('/grades');
+            const response = await api.get('/grades', { params: groupId ? { student_group_id: groupId } : {} });
             setGrades(response.data);
         } catch (error) {
             toast.error('Failed to load grades');
@@ -52,10 +60,11 @@ const Gradebook = () => {
         try {
             await api.post('/grades', form);
             toast.success('Grade saved');
-            fetchGrades();
-            setForm({ studentId: '', studentGroupId: '', assessmentName: '', score: '', maxScore: '' });
+            fetchGrades(form.studentGroupId);
+            // Keep the group selected so the next grade is quick to enter.
+            setForm(prev => ({ ...prev, studentId: '', score: '' }));
         } catch (error) {
-            toast.error('Failed to save grade');
+            toast.error(error.response?.data?.message || 'Failed to save grade');
         }
     };
 
@@ -78,7 +87,7 @@ const Gradebook = () => {
                         </select>
                         <select required value={form.studentId} onChange={e => setForm({...form, studentId: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200">
                             <option value="">Select Student</option>
-                            {studentsList.filter(s => !form.studentGroupId || s.student_group_id === parseInt(form.studentGroupId)).map(s => <option key={s.id} value={s.id}>{s.first_name} {s.last_name} ({s.enrollment_number})</option>)}
+                            {studentsList.map(s => <option key={s.id} value={s.id}>{s.first_name} {s.last_name} ({s.enrollment_number})</option>)}
                         </select>
                         <input type="text" placeholder="Assessment Name" required value={form.assessmentName} onChange={e => setForm({...form, assessmentName: e.target.value})} className="col-span-2 px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200" />
                         <div className="flex gap-2 items-center">

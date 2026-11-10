@@ -1,8 +1,10 @@
 const { bulkUploadHandler, pick } = require('../../utils/bulkImport');
 
-// Expected CSV headers: Email, Department, Hire Date
+// Expected CSV headers: Email, Department, Hire Date (First Name and Last Name optional)
 const toRecord = (row) => {
     const record = {
+        firstName: pick(row, 'First Name', 'firstName', 'first_name'),
+        lastName: pick(row, 'Last Name', 'lastName', 'last_name'),
         email: pick(row, 'Email', 'email'),
         department: pick(row, 'Department', 'department'),
         hireDate: pick(row, 'Hire Date', 'hireDate', 'hire_date'),
@@ -13,8 +15,8 @@ const toRecord = (row) => {
 };
 
 const insertProfile = (connection, userId, r) => connection.execute(
-    'INSERT INTO lecturers (user_id, department, hire_date) VALUES (?, ?, ?)',
-    [userId, r.department, r.hireDate]
+    'INSERT INTO lecturers (user_id, first_name, last_name, department, hire_date) VALUES (?, ?, ?, ?, ?)',
+    [userId, r.firstName, r.lastName, r.department, r.hireDate]
 );
 
 module.exports = {
@@ -22,6 +24,6 @@ module.exports = {
         roleName: 'LECTURER',
         toRecord,
         insertProfile,
-        welcomeArgs: (r, password) => [r.email, 'Lecturer', null, password],
+        welcomeArgs: (r, password) => [r.email, r.firstName || 'Lecturer', null, password],
     }),
 };

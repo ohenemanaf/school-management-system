@@ -7,6 +7,7 @@ class TimetableModel {
                    sg.name as student_group_name,
                    c.name as course_name, 
                    u.email as lecturer_email,
+                   NULLIF(CONCAT_WS(' ', th.first_name, th.last_name), '') AS lecturer_name,
                    r.name as room_name
             FROM timetable_sessions t
             JOIN student_groups sg ON t.student_group_id = sg.id

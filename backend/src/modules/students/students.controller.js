@@ -1,12 +1,21 @@
 const StudentModel = require('./students.model');
 const UserModel = require('../users/users.model');
 const emailService = require('../../utils/emailService');
+const { signFields } = require('../../utils/signedUploads');
+const { groupScopeFor, inScope } = require('../../utils/currentProfile');
+const { presentStudents } = require('./students.present');
 const { validatePassword, generateTemporaryPassword, hashPassword } = require('../../utils/passwords');
 class StudentController {
     static async getAll(req, res) {
         try {
-            const students = await StudentModel.findAll({ studentGroupId: req.query.student_group_id });
-            res.json(students);
+            const scope = await groupScopeFor(req.user);
+            const requested = req.query.student_group_id;
+            if (requested && !inScope(scope, requested)) {
+                return res.status(403).json({ message: 'You can only view students in the classes you teach' });
+            }
+            const rows = await StudentModel.findAll({ studentGroupId: requested, scope });
+            const students = presentStudents(rows, req.user.role);
+            res.json(signFields(students, 'profile_image_url'));
         } catch (error) {
             console.error('Error fetching students:', error);
             res.status(500).json({ message: 'Server error' });
@@ -15,9 +24,11 @@ class StudentController {
 
     static async getOne(req, res) {
         try {
-            const student = await StudentModel.findById(req.params.id);
-            if (!student) return res.status(404).json({ message: 'Student not found' });
-            res.json(student);
+            const row = await StudentModel.findById(req.params.id);
+            const scope = row ? await groupScopeFor(req.user) : null;
+            if (!row || !inScope(scope, row.student_group_id)) return res.status(404).json({ message: 'Student not found' });
+            const student = presentStudents(row, req.user.role);
+            res.json(signFields(student, 'profile_image_url'));
         } catch (error) {
             console.error('Error fetching student:', error);
             res.status(500).json({ message: 'Server error' });

@@ -1,18 +1,16 @@
 const express = require('express');
+const { authenticateToken, requirePermission } = require('../../core/middlewares/auth.middleware');
 const LecturerController = require('./lecturers.controller');
-const { authenticateToken, requireRole } = require('../../core/middlewares/auth.middleware');
-
-const router = express.Router();
-
 const LecturerBulkController = require('./lecturers.bulk.controller');
 const uploadCsv = require('../../core/middlewares/csvUpload.middleware');
 
+const router = express.Router();
 router.use(authenticateToken);
-router.post('/bulk-upload', requireRole(['SUPER_ADMIN', 'ADMIN']), uploadCsv.single('file'), LecturerBulkController.uploadBulk);
-router.get('/', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN']), LecturerController.getAll);
-router.post('/', requireRole(['SUPER_ADMIN', 'ADMIN']), LecturerController.create);
-router.put('/:id', requireRole(['SUPER_ADMIN', 'ADMIN']), LecturerController.update);
-router.delete('/:id', requireRole(['SUPER_ADMIN', 'ADMIN']), LecturerController.delete);
+
+router.get('/', requirePermission('lecturers.view'), LecturerController.getAll);
+router.post('/bulk-upload', requirePermission('lecturers.manage'), uploadCsv.single('file'), LecturerBulkController.uploadBulk);
+router.post('/', requirePermission('lecturers.manage'), LecturerController.create);
+router.put('/:id', requirePermission('lecturers.manage'), LecturerController.update);
+router.delete('/:id', requirePermission('lecturers.manage'), LecturerController.delete);
 
 module.exports = router;
-

@@ -9,7 +9,9 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME || 'school_system',
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    // DATE columns as 'YYYY-MM-DD' text: a calendar date must not shift with time zones.
+    dateStrings: ['DATE']
 });
 
 module.exports = pool;

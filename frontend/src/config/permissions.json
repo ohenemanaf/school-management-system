@@ -1,0 +1,296 @@
+{
+  "_comment": "Single source of truth for who may do what. A copy lives at frontend/src/config/permissions.json and a backend test fails if they differ. Scoping (a lecturer's own classes, a student's own records) is enforced in the controllers.",
+  "users.manage": [
+    "SUPER_ADMIN"
+  ],
+  "dashboard.stats": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER"
+  ],
+  "students.view": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "ACCOUNTANT",
+    "LIBRARIAN",
+    "LECTURER"
+  ],
+  "students.manage": [
+    "SUPER_ADMIN",
+    "ADMIN"
+  ],
+  "students.personal": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER"
+  ],
+  "students.guardianContact": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "ACCOUNTANT"
+  ],
+  "students.medical": [
+    "SUPER_ADMIN",
+    "ADMIN"
+  ],
+  "lecturers.view": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER"
+  ],
+  "lecturers.manage": [
+    "SUPER_ADMIN",
+    "ADMIN"
+  ],
+  "academics.view": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER"
+  ],
+  "academics.manage": [
+    "SUPER_ADMIN",
+    "ADMIN"
+  ],
+  "groups.view": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "LECTURER"
+  ],
+  "timetable.view": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "LECTURER",
+    "STUDENT"
+  ],
+  "timetable.manage": [
+    "SUPER_ADMIN",
+    "ADMIN"
+  ],
+  "attendance.view": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "LECTURER",
+    "STUDENT"
+  ],
+  "attendance.record": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "LECTURER"
+  ],
+  "staffAttendance.view": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER"
+  ],
+  "staffAttendance.manage": [
+    "SUPER_ADMIN",
+    "ADMIN"
+  ],
+  "staffAttendance.checkIn": [
+    "LECTURER"
+  ],
+  "gate.code": [
+    "SUPER_ADMIN",
+    "GATEKEEPER"
+  ],
+  "grades.view": [
+    "LECTURER",
+    "STUDENT"
+  ],
+  "grades.record": [
+    "LECTURER"
+  ],
+  "grades.analytics": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER"
+  ],
+  "materials.view": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "LECTURER",
+    "STUDENT"
+  ],
+  "materials.manage": [
+    "LECTURER"
+  ],
+  "finance.summary": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "ACCOUNTANT"
+  ],
+  "finance.records": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "ACCOUNTANT"
+  ],
+  "finance.own": [
+    "STUDENT"
+  ],
+  "finance.manage": [
+    "SUPER_ADMIN",
+    "ACCOUNTANT"
+  ],
+  "library.view": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "LIBRARIAN",
+    "LECTURER",
+    "STUDENT"
+  ],
+  "library.stats": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "LIBRARIAN"
+  ],
+  "library.manage": [
+    "SUPER_ADMIN",
+    "LIBRARIAN"
+  ],
+  "library.classReading": [
+    "SUPER_ADMIN",
+    "LIBRARIAN",
+    "STUDENT"
+  ],
+  "broadcast.send": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "ACCOUNTANT"
+  ],
+  "broadcast.anyAudience": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER"
+  ],
+  "page.dashboard": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "ACCOUNTANT",
+    "LIBRARIAN",
+    "LECTURER",
+    "STUDENT"
+  ],
+  "page.timetable": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "LECTURER",
+    "STUDENT"
+  ],
+  "page.academics": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER"
+  ],
+  "page.groups": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "LECTURER"
+  ],
+  "page.students": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "ACCOUNTANT",
+    "LECTURER"
+  ],
+  "page.attendance": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "LECTURER"
+  ],
+  "page.staffAttendance": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER"
+  ],
+  "page.gradebook": [
+    "LECTURER"
+  ],
+  "page.performance": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER"
+  ],
+  "page.results": [
+    "STUDENT"
+  ],
+  "page.finance": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "ACCOUNTANT",
+    "STUDENT"
+  ],
+  "page.library": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "LIBRARIAN",
+    "LECTURER",
+    "STUDENT"
+  ],
+  "page.materials": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "LECTURER",
+    "STUDENT"
+  ],
+  "page.lecturers": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER"
+  ],
+  "page.users": [
+    "SUPER_ADMIN"
+  ],
+  "page.broadcast": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "ACCOUNTANT"
+  ],
+  "page.gate": [
+    "SUPER_ADMIN",
+    "GATEKEEPER"
+  ],
+  "timetable.generate": [
+    "SUPER_ADMIN",
+    "ADMIN"
+  ],
+  "terms.view": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "ACCOUNTANT",
+    "LIBRARIAN",
+    "LECTURER",
+    "STUDENT"
+  ],
+  "terms.manage": [
+    "SUPER_ADMIN",
+    "ADMIN"
+  ],
+  "reminders.run": [
+    "SUPER_ADMIN",
+    "ADMIN"
+  ],
+  "page.scheduler": [
+    "SUPER_ADMIN",
+    "ADMIN"
+  ]
+}

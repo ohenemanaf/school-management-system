@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import api, { fileUrl } from '../../utils/api';
 import toast from 'react-hot-toast';
+import ExamBanner from '../scheduler/ExamBanner';
 import { IconSchool, IconBooks, IconChartBar, IconCalendarTime, IconReportAnalytics, IconArrowRight, IconId, IconMail, IconFileInvoice, IconDownload, IconCash } from '@tabler/icons-react';
 
 const StudentDashboard = () => {
@@ -85,6 +86,7 @@ const StudentDashboard = () => {
 
     return (
         <div className="page space-y-8">
+            <ExamBanner />
             {/* Header section with Glassmorphism Profile Card */}
             <div className="flex flex-col lg:flex-row gap-8 items-start">
                 {/* Profile Card */}

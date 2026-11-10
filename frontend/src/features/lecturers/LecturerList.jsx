@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../../utils/api';
+import { can } from '../../config/permissions';
+import { lecturerName } from '../../utils/people';
 import { useAuth } from '../../context/AuthContext';
 import { IconSearch, IconPlus, IconTrash, IconUser, IconX, IconEdit, IconUpload, IconFileSpreadsheet } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
@@ -10,7 +12,7 @@ const LecturerList = () => {
     const [search, setSearch] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editLecturerId, setEditLecturerId] = useState(null);
-    const [formData, setFormData] = useState({ email: '', password: '', department: '', hireDate: '' });
+    const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', password: '', department: '', hireDate: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
     
     // Bulk Upload state
@@ -20,7 +22,7 @@ const LecturerList = () => {
     const fileInputRef = useRef(null);
     
     const { user } = useAuth();
-    const isAdmin = user?.role === 'ADMIN';
+    const isAdmin = can(user, 'lecturers.manage');
 
     useEffect(() => { fetchLecturers(); }, []);
 
@@ -39,6 +41,8 @@ const LecturerList = () => {
         if (lecturer) {
             setEditLecturerId(lecturer.id);
             setFormData({
+                firstName: lecturer.first_name || '',
+                lastName: lecturer.last_name || '',
                 email: lecturer.email,
                 password: '', // Hidden/ignored on edit
                 department: lecturer.department,
@@ -46,7 +50,7 @@ const LecturerList = () => {
             });
         } else {
             setEditLecturerId(null);
-            setFormData({ email: '', password: '', department: '', hireDate: '' });
+            setFormData({ firstName: '', lastName: '', email: '', password: '', department: '', hireDate: '' });
         }
         setIsModalOpen(true);
     };
@@ -65,7 +69,7 @@ const LecturerList = () => {
                 toast.success('Lecturer added successfully');
             }
             setIsModalOpen(false);
-            setFormData({ email: '', password: '', department: '', hireDate: '' });
+            setFormData({ firstName: '', lastName: '', email: '', password: '', department: '', hireDate: '' });
             fetchLecturers();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to save lecturer');
@@ -112,6 +116,7 @@ const LecturerList = () => {
     };
 
     const filteredLecturers = lecturers.filter(t => 
+        lecturerName(t).toLowerCase().includes(search.toLowerCase()) ||
         t.email.toLowerCase().includes(search.toLowerCase()) ||
         t.department.toLowerCase().includes(search.toLowerCase())
     );
@@ -215,6 +220,14 @@ const LecturerList = () => {
                         <div className="p-8 overflow-y-auto">
                             <form id="lecturerForm" onSubmit={handleSubmit} className="flex flex-col gap-5">
                                 <div>
+                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">First Name</label>
+                                    <input required type="text" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-[#1B437C] outline-none font-medium text-slate-800 dark:text-slate-100" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Last Name</label>
+                                    <input required type="text" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-[#1B437C] outline-none font-medium text-slate-800 dark:text-slate-100" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} />
+                                </div>
+                                <div>
                                     <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Email Address</label>
                                     <input required type="email" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50 rounded-xl focus:ring-2 focus:ring-[#1B437C] outline-none font-medium text-slate-800 dark:text-slate-100" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                                 </div>
@@ -278,7 +291,10 @@ const LecturerList = () => {
                                             <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
                                                 <IconUser size={20} />
                                             </div>
-                                            <span className="font-semibold text-slate-800 dark:text-slate-100">{lecturer.email}</span>
+                                            <div className="min-w-0">
+                                                <div className="font-semibold text-slate-800 dark:text-slate-100">{lecturerName(lecturer)}</div>
+                                                <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{lecturer.email}</div>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4">{lecturer.department}</td>
                                         <td className="px-6 py-4">{lecturer.hire_date ? new Date(lecturer.hire_date).toLocaleDateString() : 'N/A'}</td>
@@ -316,7 +332,8 @@ const LecturerList = () => {
                                         <IconUser size={20} />
                                     </div>
                                     <div className="overflow-hidden">
-                                        <p className="font-semibold text-slate-800 dark:text-slate-100 truncate text-base">{lecturer.email}</p>
+                                        <p className="font-semibold text-slate-800 dark:text-slate-100 truncate text-base">{lecturerName(lecturer)}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{lecturer.email}</p>
                                         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{lecturer.department}</p>
                                     </div>
                                 </div>

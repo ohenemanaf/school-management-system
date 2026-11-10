@@ -59,9 +59,9 @@ test('school-wide stats are not visible to students', async () => {
     assert.strictEqual(res.status, 403);
 });
 
-test('non-library staff only see their own loans', async () => {
+test('people outside the library only see their own loans', async () => {
     onQuery(/WHERE l\.user_id = \?/, (sql, params) => [[{ user_id: params[0] }]]);
-    const res = await request(app).get('/api/library/loans').set('Authorization', tokenFor('GATEKEEPER', { id: 9 }));
+    const res = await request(app).get('/api/library/loans').set('Authorization', tokenFor('LECTURER', { id: 9 }));
     assert.strictEqual(res.status, 200);
     assert.deepStrictEqual(res.body, [{ user_id: 9 }]);
 });

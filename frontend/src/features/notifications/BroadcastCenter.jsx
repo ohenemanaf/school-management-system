@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import api from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
+import { can } from '../../config/permissions';
 import toast from 'react-hot-toast';
 import { IconSend, IconMail, IconAlertCircle, IconCheck, IconInfoCircle, IconSpeakerphone } from '@tabler/icons-react';
 
 const BroadcastCenter = () => {
     const [title, setTitle] = useState('');
     const [message, setMessage] = useState('');
-    const [audience, setAudience] = useState('ALL');
+    const { user } = useAuth();
+    const anyAudience = can(user, 'broadcast.anyAudience');
+    const [audience, setAudience] = useState(anyAudience ? 'ALL' : 'STUDENT');
     const [type, setType] = useState('INFO');
     const [sendEmail, setSendEmail] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,10 +61,10 @@ const BroadcastCenter = () => {
                                 onChange={(e) => setAudience(e.target.value)}
                                 className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900/50/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-semibold text-slate-700 dark:text-slate-200"
                             >
-                                <option value="ALL">Everyone in System</option>
+                                {anyAudience && <option value="ALL">Everyone in System</option>}
                                 <option value="STUDENT">All Students</option>
-                                <option value="LECTURER">All Lecturers</option>
-                                <option value="ADMIN">Administrators Only</option>
+                                {anyAudience && <option value="LECTURER">All Lecturers</option>}
+                                {anyAudience && <option value="ADMIN">Administrators Only</option>}
                             </select>
                         </div>
                         

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
+import { can } from '../../config/permissions';
+import { lecturerName } from '../../utils/people';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -7,7 +9,8 @@ const StaffAttendance = () => {
     const { user } = useAuth();
     const [attendance, setAttendance] = useState([]);
     const [loading, setLoading] = useState(true);
-    const isAdmin = user?.role === 'ADMIN';
+    const isAdmin = can(user, 'staffAttendance.view');      // sees every lecturer
+    const canRecord = can(user, 'staffAttendance.manage');  // headmaster views only
 
     // Form state for clock in/out
     const [form, setForm] = useState({
@@ -59,6 +62,7 @@ const StaffAttendance = () => {
                 <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">Manage lecturer clock-ins and daily presence.</p>
             </div>
 
+            {canRecord && (
             <div className="glass p-6 rounded-2xl md:rounded-3xl shadow-sm mb-8">
                 <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">{isAdmin ? 'Log Staff Attendance' : 'Clock In / Out'}</h2>
                 <form onSubmit={handleMark} className="grid grid-cols-1 md:grid-cols-6 gap-4">
@@ -79,6 +83,7 @@ const StaffAttendance = () => {
                     <button type="submit" className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-3 rounded-xl font-semibold transition-colors shadow-sm shadow-primary-200">Record</button>
                 </form>
             </div>
+            )}
 
             <div className="glass rounded-2xl md:rounded-3xl overflow-hidden shadow-sm p-4 md:p-6">
                 <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Attendance Log</h2>
@@ -105,7 +110,7 @@ const StaffAttendance = () => {
                                         <td className="px-6 py-4 font-semibold text-slate-700 dark:text-slate-200">{new Date(rec.date).toLocaleDateString()}</td>
                                         {isAdmin && (
                                             <td className="px-6 py-4">
-                                                <div className="font-semibold text-slate-800 dark:text-slate-100">{rec.email?.split('@')[0]}</div>
+                                                <div className="font-semibold text-slate-800 dark:text-slate-100">{lecturerName(rec)}</div>
                                                 <div className="text-xs text-slate-500 dark:text-slate-400">{rec.email}</div>
                                             </td>
                                         )}

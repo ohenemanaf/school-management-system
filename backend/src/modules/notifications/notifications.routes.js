@@ -1,21 +1,16 @@
 const express = require('express');
-const router = express.Router();
+const { authenticateToken, requirePermission } = require('../../core/middlewares/auth.middleware');
 const NotificationsController = require('./notifications.controller');
-const { authenticateToken, requireRole } = require('../../core/middlewares/auth.middleware');
 
-// All notification routes require authentication
+const router = express.Router();
 router.use(authenticateToken);
 
-// Get my notifications
+// Everyone reads their own notifications
 router.get('/', NotificationsController.getMyNotifications);
-
-// Mark single notification as read
+router.put('/read-all', NotificationsController.markAllAsRead);
 router.put('/:id/read', NotificationsController.markAsRead);
 
-// Mark all notifications as read
-router.put('/read-all', NotificationsController.markAllAsRead);
-
-// Admin only: Broadcast notification/email
-router.post('/broadcast', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT']), NotificationsController.broadcast);
+// The accountant may only address students; the audience check is in the controller.
+router.post('/broadcast', requirePermission('broadcast.send'), NotificationsController.broadcast);
 
 module.exports = router;
