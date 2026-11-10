@@ -29,6 +29,7 @@ app.use('/api/dashboard', require('./modules/dashboard/dashboard.routes'));
 app.use('/api/scheduler', require('./modules/scheduler/scheduler.routes'));
 app.use('/api/terms', require('./modules/scheduler/terms.routes'));
 app.use('/api/reminders', require('./modules/scheduler/reminders.routes'));
+app.use('/api/results', require('./modules/results/results.routes'));
 app.use('/api/lecturers', require('./modules/lecturers/lecturers.routes'));
 app.use('/api/attendance', require('./modules/attendance/attendance.routes'));
 app.use('/api/grades', require('./modules/grades/grades.routes'));

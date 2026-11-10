@@ -71,6 +71,7 @@ before(async () => {
     ids.room = (await admin.query("INSERT INTO rooms (name) VALUES ('Room 1')"))[0].insertId;
     ids.course = (await admin.query("INSERT INTO courses (name, code) VALUES ('Maths', 'M1')"))[0].insertId;
     ids.fee = (await admin.query("INSERT INTO fee_types (name, amount) VALUES ('Tuition', 500)"))[0].insertId;
+    ids.term = (await admin.query("INSERT INTO terms (name, start_date, end_date, is_current) VALUES ('Semester 1', '2026-01-05', '2026-12-31', 1)"))[0].insertId;
     // The lecturer teaches Form 1A, which is what scopes their classes.
     await admin.query(
         "INSERT INTO timetable_sessions (course_id, student_group_id, lecturer_id, room_id, day_of_week, start_time, end_time) VALUES (?, ?, ?, ?, 'Monday', '08:00', '09:00')",
@@ -198,8 +199,8 @@ test('notifications: role broadcast, global read receipts, read-all', { skip }, 
 });
 
 test('grades: membership check, group filter and cap', { skip }, async () => {
-    ok(await as('lecturer').post('/api/grades', { studentId: ids.student, studentGroupId: ids.group, assessmentName: 'Quiz', score: 8, maxScore: 10 }), 201);
-    assert.strictEqual((await as('lecturer').post('/api/grades', { studentId: ids.student, studentGroupId: ids.otherGroup, assessmentName: 'Quiz', score: 8, maxScore: 10 })).status, 403);
+    ok(await as('lecturer').post('/api/grades', { studentId: ids.student, studentGroupId: ids.group, assessmentName: 'Quiz', score: 8, maxScore: 10, courseId: ids.course, component: 'CLASS' }), 201);
+    assert.strictEqual((await as('lecturer').post('/api/grades', { studentId: ids.student, studentGroupId: ids.otherGroup, assessmentName: 'Quiz', score: 8, maxScore: 10, courseId: ids.course, component: 'CLASS' })).status, 403);
     const analytics = await as('admin').get('/api/grades/analytics');
     ok(analytics);
     assert.strictEqual(analytics.body.overall.grades, 1);
@@ -208,6 +209,29 @@ test('grades: membership check, group filter and cap', { skip }, async () => {
     const res = await as('lecturer').get(`/api/grades?student_group_id=${ids.group}&limit=5`);
     ok(res);
     assert.strictEqual(res.body.length, 1);
+});
+
+test('semester results: hidden until released, then a full statement', { skip }, async () => {
+    // The quiz from the grades test is class work; add the exam.
+    ok(await as('lecturer').post('/api/grades', { studentId: ids.student, studentGroupId: ids.group, assessmentName: 'Final exam', score: 72, maxScore: 100, courseId: ids.course, component: 'EXAM' }), 201);
+    const terms = await as('student').get('/api/results/terms');
+    ok(terms);
+    assert.strictEqual(terms.body.find((t) => t.id === ids.term).graded, 2);
+    const hidden = await as('student').get(`/api/results/statement?term_id=${ids.term}`);
+    assert.strictEqual(hidden.status, 403);
+    assert.strictEqual(hidden.body.code, 'NOT_RELEASED');
+
+    ok(await as('admin').post(`/api/terms/${ids.term}/results`, { released: true }));
+    const statement = await as('student').get(`/api/results/statement?term_id=${ids.term}`);
+    ok(statement);
+    const [row] = statement.body.rows;
+    // Class work 8/10 = 80% -> 24 of 30; exam 72% -> 50.4 of 70; total 74.4 -> B
+    assert.deepStrictEqual([row.caMark, row.examMark, row.total, row.grade], [24, 50.4, 74.4, 'B']);
+    assert.strictEqual(statement.body.summary.gpa, 3);
+    assert.strictEqual(statement.body.summary.cumulative.cgpa, 3);
+    assert.strictEqual(statement.body.student.indexNumber, 'S-1');
+    assert.strictEqual(statement.body.scale.length, 8);
+    assert.strictEqual((await as('admin').get(`/api/results/statement?term_id=${ids.term}`)).status, 403, 'admins never see named results');
 });
 
 test('students filter by group; created students get a generated index number', { skip }, async () => {
