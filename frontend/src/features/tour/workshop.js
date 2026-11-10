@@ -198,10 +198,10 @@ function chapters(user) {
         },
         {
             id: 'results',
-            title: 'Semester results',
+            title: 'My results',
             route: '/admin/results',
             perm: 'page.results',
-            steps: [{ target: '.page h1', title: 'Your semester statement', body: 'Once the school releases a term, your full statement appears here: class work and exam marks for every subject, the total, grade and grade point, your semester and cumulative GPA, and your attendance.\n\nChoose the term at the top and press Print / Save PDF to print it or keep a copy.' }],
+            steps: [{ target: '.page h1', title: 'Your results and report card', body: 'Your average, best subject, progress over time and every mark appear here as lecturers enter them.\n\nBelow is your report card: class work and exam marks for each subject, the total, grade and grade point, your GPA and attendance. It appears once the school releases the term. Press Print report card to print it or save it as a PDF.' }],
         },
         {
             id: 'materials',

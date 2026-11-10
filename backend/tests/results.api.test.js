@@ -50,3 +50,10 @@ test('only super admin and admin can release results', async () => {
     const bad = await request(app).post('/api/terms/1/results').set('Authorization', tokenFor('ADMIN')).send({ released: true, caWeight: 120 });
     assert.strictEqual(bad.status, 400);
 });
+
+test('students can read the grading scale', async () => {
+    onQuery(/FROM grading_scale/, [[{ min_score: 80, grade: 'A', grade_point: 4, remark: 'Excellent' }]]);
+    const res = await request(app).get('/api/results/scale').set('Authorization', tokenFor('STUDENT'));
+    assert.strictEqual(res.status, 200);
+    assert.deepStrictEqual(res.body, [{ minScore: 80, grade: 'A', gradePoint: 4, remark: 'Excellent' }]);
+});

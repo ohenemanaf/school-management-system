@@ -37,8 +37,8 @@ class GradesModel {
 
     static async findByStudent(studentId) {
         const [rows] = await db.execute(`
-            SELECT g.id, g.assessment_name, g.score, g.max_score, g.created_at, g.component,
-                   c.name AS course_name, t.name AS term_name, sg.name as student_group_name
+            SELECT g.id, g.assessment_name, g.score, g.max_score, g.created_at, g.component, g.term_id,
+                   c.name AS course_name, c.code AS course_code, t.name AS term_name, sg.name as student_group_name
             FROM grades g
             JOIN student_groups sg ON g.student_group_id = sg.id
             LEFT JOIN courses c ON c.id = g.course_id

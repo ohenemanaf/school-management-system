@@ -11,6 +11,12 @@ router.get('/terms', handle(async (req, res) => {
     res.json(await service.termsForUser(req.user.id));
 }));
 
+// The grading scale, so letter grades on progress charts match the report card.
+router.get('/scale', handle(async (req, res) => {
+    const [rows] = await require('../../config/db').execute('SELECT min_score, grade, grade_point, remark FROM grading_scale ORDER BY min_score DESC');
+    res.json(rows.map((s) => ({ minScore: Number(s.min_score), grade: s.grade, gradePoint: Number(s.grade_point), remark: s.remark })));
+}));
+
 router.get('/statement', handle(async (req, res) => {
     const termId = Number(req.query.term_id);
     if (!Number.isInteger(termId) || termId <= 0) return res.status(400).json({ message: 'Choose a term.' });
