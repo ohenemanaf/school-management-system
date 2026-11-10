@@ -12,6 +12,19 @@ const GatekeeperDashboard = () => {
 
     const canAccess = can(user, 'page.gate');
 
+    const [checkIns, setCheckIns] = useState(null);
+
+    // Who has checked in today, refreshed every 30 seconds while visible.
+    useEffect(() => {
+        if (!canAccess) return;
+        const loadCheckIns = () => api.get('/dashboard').then((res) => setCheckIns(res.data.sections.gate)).catch(() => {});
+        loadCheckIns();
+        const interval = setInterval(() => {
+            if (document.visibilityState === 'visible') loadCheckIns();
+        }, 30000);
+        return () => clearInterval(interval);
+    }, [canAccess]);
+
     const fetchToken = async () => {
         try {
             const res = await api.get('/attendance/gate-token');
@@ -75,6 +88,26 @@ const GatekeeperDashboard = () => {
                         Auto-refreshing Live Token
                     </p>
                 </div>
+
+                {checkIns && (
+                    <div className="mt-10 w-full max-w-md bg-white/5 border border-white/10 rounded-2xl p-5">
+                        <p className="text-sm font-semibold text-slate-300 mb-3">
+                            Checked in today: {checkIns.checkedIn.length} of {checkIns.lecturers} lecturers
+                        </p>
+                        {checkIns.checkedIn.length === 0 ? (
+                            <p className="text-sm text-slate-400">No one has checked in yet.</p>
+                        ) : (
+                            <ul className="divide-y divide-white/10 max-h-60 overflow-y-auto">
+                                {checkIns.checkedIn.map((c, i) => (
+                                    <li key={i} className="flex justify-between py-2 text-sm">
+                                        <span className="text-slate-200 truncate">{c.lecturer_name || c.email}</span>
+                                        <span className="text-slate-400 font-mono shrink-0 ml-3">{c.check_in_time || c.status}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -25,6 +25,7 @@ app.use('/uploads', requireSignedUpload, express.static(path.join(__dirname, '..
 app.use('/api/users', require('./modules/users/users.routes'));
 app.use('/api/students', require('./modules/students/students.routes'));
 app.use('/api/stats', require('./modules/stats/stats.routes'));
+app.use('/api/dashboard', require('./modules/dashboard/dashboard.routes'));
 app.use('/api/lecturers', require('./modules/lecturers/lecturers.routes'));
 app.use('/api/attendance', require('./modules/attendance/attendance.routes'));
 app.use('/api/grades', require('./modules/grades/grades.routes'));

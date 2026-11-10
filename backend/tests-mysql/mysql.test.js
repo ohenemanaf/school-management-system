@@ -262,6 +262,20 @@ test('library stats and partial book updates', { skip }, async () => {
     assert.strictEqual(stats.body.totalBooks, 1);
 });
 
+test('every role dashboard loads from real data', { skip }, async () => {
+    for (const who of ['admin', 'schooladmin', 'accountant', 'librarian', 'lecturer', 'student', 'gate']) {
+        const res = await as(who).get('/api/dashboard');
+        ok(res);
+        assert.ok(Array.isArray(res.body.layout), who);
+    }
+    const lecturer = await as('lecturer').get('/api/dashboard');
+    assert.strictEqual(lecturer.body.sections.teaching.classes, 1);
+    assert.strictEqual(lecturer.body.sections.teaching.students, 3);
+    const accountant = await as('accountant').get('/api/dashboard');
+    assert.ok(accountant.body.sections.financeTotals.billed >= 500);
+    assert.ok(Array.isArray(accountant.body.sections.financeDesk.recentPayments));
+});
+
 test('upgrade scripts apply cleanly to a database made from the old schema', { skip }, async () => {
     await admin.query(`USE ${UPGRADE}`);
     await admin.query(read('tests-mysql/fixtures/schema-before-upgrades.sql'));
