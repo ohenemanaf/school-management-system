@@ -14,6 +14,7 @@ class CoursesController {
     static async create(req, res) {
         try {
             const { name, code } = req.body;
+            if (!name || !code) return res.status(400).json({ message: 'Name and code are required' });
             const [result] = await db.execute('INSERT INTO courses (name, code) VALUES (?, ?)', [name, code]);
             res.status(201).json({ message: 'Course created successfully', id: result.insertId });
         } catch (error) {

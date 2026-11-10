@@ -26,10 +26,15 @@ export const AuthProvider = ({ children }) => {
         checkAuth();
     }, []);
 
+    const loadProfile = async () => {
+        const response = await api.get('/users/profile');
+        setUser(response.data.user);
+        return response.data.user;
+    };
+
     const refreshUser = async () => {
         try {
-            const response = await api.get('/users/profile');
-            setUser(response.data.user);
+            return await loadProfile();
         } catch (error) {
             console.error('Failed to refresh user', error);
         }
@@ -38,11 +43,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         const response = await api.post('/users/login', { email, password });
         localStorage.setItem('token', response.data.token);
-        await refreshUser(); // Fetch full profile including preferences after login
-        
-        // Also fetch profile here specifically to return it to the caller
-        const profile = await api.get('/users/profile');
-        return profile.data.user;
+        return loadProfile();
     };
 
     const logout = () => {

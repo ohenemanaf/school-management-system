@@ -1,4 +1,6 @@
 const FinanceModel = require('./finance.model');
+const db = require('../../config/db');
+const { studentIdFor } = require('../../utils/currentProfile');
 
 class FinanceController {
     // === FEE TYPES ===
@@ -43,10 +45,8 @@ class FinanceController {
             // If user is STUDENT, only return their own invoices
             let studentId = null;
             if (req.user.role === 'STUDENT') {
-                const db = require('../../config/db');
-                const [rows] = await db.execute('SELECT id FROM students WHERE user_id = ?', [req.user.id]);
-                if (rows.length === 0) return res.status(404).json({ message: 'Student profile not found' });
-                studentId = rows[0].id;
+                studentId = await studentIdFor(req.user.id);
+                if (!studentId) return res.status(404).json({ message: 'Student profile not found' });
             }
             
             const invoices = await FinanceModel.getAllInvoices(studentId);
@@ -85,6 +85,14 @@ class FinanceController {
     static async getPayments(req, res) {
         try {
             const { invoiceId } = req.params;
+            if (req.user.role === 'STUDENT') {
+                // Students may only see payments on their own invoices.
+                const studentId = await studentIdFor(req.user.id);
+                const [owner] = await db.execute('SELECT student_id FROM invoices WHERE id = ?', [invoiceId]);
+                if (!studentId || owner.length === 0 || owner[0].student_id !== studentId) {
+                    return res.status(404).json({ message: 'Invoice not found' });
+                }
+            }
             const payments = await FinanceModel.getPaymentsByInvoice(invoiceId);
             res.json(payments);
         } catch (error) {

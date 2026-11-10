@@ -23,11 +23,13 @@ import FinanceDashboard from './features/finance/FinanceDashboard';
 import LibraryDashboard from './features/library/LibraryDashboard';
 import CourseList from './features/courses/CourseList';
 import ProgramList from './features/programs/ProgramList';
+import ForcePasswordChange from './features/auth/ForcePasswordChange';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
+  if (user.mustChangePassword) return <Navigate to="/change-password" replace />;
   return children;
 };
 
@@ -49,6 +51,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/admin" replace />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/change-password" element={<ForcePasswordChange />} />
             
             <Route path="/gatekeeper" element={
               <ProtectedRoute>

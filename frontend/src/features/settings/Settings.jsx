@@ -80,8 +80,8 @@ const Settings = () => {
         if (passwordForm.newPassword !== passwordForm.confirmPassword) {
             return toast.error("New passwords do not match.");
         }
-        if (passwordForm.newPassword.length < 6) {
-            return toast.error("Password must be at least 6 characters.");
+        if (passwordForm.newPassword.length < 12) {
+            return toast.error("Password must be at least 12 characters.");
         }
         
         setIsSaving(true);

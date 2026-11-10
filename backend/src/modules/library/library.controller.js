@@ -110,9 +110,8 @@ class LibraryController {
     // === LOANS ===
     static async getAllLoans(req, res) {
         try {
-            // If Student or Lecturer, only show their own loans
-            const role = req.user.role.toUpperCase();
-            if (role === 'STUDENT' || role === 'LECTURER') {
+            // Only library managers see every loan; everyone else sees their own.
+            if (!['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LIBRARIAN'].includes(req.user.role)) {
                 const loans = await LibraryModel.getLoansByUser(req.user.id);
                 return res.json(loans);
             }

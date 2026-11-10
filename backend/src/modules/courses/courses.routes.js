@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.use(authenticateToken);
 router.get('/', CoursesController.getAll);
-router.post('/', requireRole(['ADMIN']), CoursesController.create);
-router.delete('/:id', requireRole(['ADMIN']), CoursesController.delete);
+router.post('/', requireRole(['SUPER_ADMIN', 'ADMIN']), CoursesController.create);
+router.delete('/:id', requireRole(['SUPER_ADMIN', 'ADMIN']), CoursesController.delete);
 
 module.exports = router;
