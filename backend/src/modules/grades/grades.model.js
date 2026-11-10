@@ -1,16 +1,25 @@
 const db = require('../../config/db');
 
 class GradesModel {
-    static async findAll() {
+    /** Most recent grades first, optionally for one group. Always capped. */
+    static async findAll({ studentGroupId, limit } = {}) {
+        const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 500, 1), 2000);
+        const params = [];
+        let where = '';
+        if (studentGroupId) {
+            where = 'WHERE g.student_group_id = ?';
+            params.push(studentGroupId);
+        }
         const [rows] = await db.execute(`
-            SELECT g.id, g.assessment_name, g.score, g.max_score,
+            SELECT g.id, g.assessment_name, g.score, g.max_score, g.created_at,
                    s.first_name, s.last_name, s.enrollment_number,
                    sg.name as student_group_name
             FROM grades g
             JOIN students s ON g.student_id = s.id
             JOIN student_groups sg ON g.student_group_id = sg.id
-            ORDER BY g.created_at DESC
-        `);
+            ${where}
+            ORDER BY g.created_at DESC, g.id DESC
+            LIMIT ${safeLimit}`, params);
         return rows;
     }
 
