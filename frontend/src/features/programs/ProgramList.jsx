@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
+import { can } from '../../config/permissions';
 import { useAuth } from '../../context/AuthContext';
 import { IconBook2, IconPlus, IconX, IconTrash } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
@@ -10,7 +11,7 @@ const ProgramList = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({ name: '', code: '' });
     const { user } = useAuth();
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+    const isAdmin = can(user, 'academics.manage');
 
     useEffect(() => {
         fetchPrograms();

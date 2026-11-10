@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../../utils/api';
+import { can } from '../../config/permissions';
 import { lecturerName } from '../../utils/people';
 import { useAuth } from '../../context/AuthContext';
 import { IconSearch, IconPlus, IconTrash, IconUser, IconX, IconEdit, IconUpload, IconFileSpreadsheet } from '@tabler/icons-react';
@@ -21,7 +22,7 @@ const LecturerList = () => {
     const fileInputRef = useRef(null);
     
     const { user } = useAuth();
-    const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(user?.role);
+    const isAdmin = can(user, 'lecturers.manage');
 
     useEffect(() => { fetchLecturers(); }, []);
 

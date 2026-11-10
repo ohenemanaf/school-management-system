@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { can } from '../config/permissions';
 import { useTheme } from '../context/ThemeContext';
 import api from '../utils/api';
 import { 
@@ -24,7 +25,8 @@ import {
     IconBook,
     IconUsersGroup,
     IconBuilding,
-    IconCertificate
+    IconCertificate,
+    IconChartBar
 } from '@tabler/icons-react';
 
 const AdminLayout = () => {
@@ -94,27 +96,29 @@ const AdminLayout = () => {
 
     const unreadCount = notifications.filter(n => !n.is_read).length;
 
+    // Each item shows only for roles holding its page permission (config/permissions.json).
     const navItems = [
-        { path: '/admin', label: 'Dashboard', icon: <IconDashboard size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER', 'STUDENT'] },
-        { path: '/admin/timetable', label: 'Master Timetable', icon: <IconCalendarEvent size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER', 'STUDENT'] },
-        { path: '/admin/courses', label: 'Courses', icon: <IconBook size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN'] },
-        { path: '/admin/programs', label: 'Programs', icon: <IconCertificate size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN'] },
-        { path: '/admin/student-groups', label: 'Student Groups', icon: <IconUsersGroup size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER'] },
-        { path: '/admin/rooms', label: 'Rooms', icon: <IconBuilding size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN'] },
-        { path: '/admin/students', label: 'Students', icon: <IconSchool size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER', 'ACCOUNTANT'] },
-        { path: '/admin/attendance', label: 'Student Attendance', icon: <IconChecklist size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER'] },
-        { path: '/admin/staff-attendance', label: 'Staff Attendance', icon: <IconUsers size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN'] },
-        { path: '/admin/grades', label: 'Gradebook', icon: <IconTrophy size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER'] },
-        { path: '/admin/results', label: 'My Results', icon: <IconReportAnalytics size={20} />, roles: ['STUDENT'] },
-        { path: '/admin/finance', label: 'Finance', icon: <IconCash size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT', 'STUDENT'] },
-        { path: '/admin/library', label: 'Library', icon: <IconBooks size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LIBRARIAN', 'STUDENT', 'LECTURER'] },
-        { path: '/admin/materials', label: 'Materials', icon: <IconFileText size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER', 'STUDENT'] },
-        { path: '/admin/lecturers', label: 'Lecturers', icon: <IconSchool size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN'] },
-        { path: '/admin/users', label: 'System Users', icon: <IconUsers size={20} />, roles: ['SUPER_ADMIN', 'ADMIN'] },
-        { path: '/admin/broadcast', label: 'Broadcast', icon: <IconSpeakerphone size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT'] },
-        { path: '/admin/settings', label: 'Settings', icon: <IconSettings size={20} />, roles: ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT', 'LIBRARIAN', 'LECTURER', 'STUDENT', 'GATEKEEPER'] },
+        { path: '/admin', label: 'Dashboard', icon: <IconDashboard size={20} />, perm: 'page.dashboard' },
+        { path: '/admin/timetable', label: 'Timetable', icon: <IconCalendarEvent size={20} />, perm: 'page.timetable' },
+        { path: '/admin/students', label: 'Students', icon: <IconSchool size={20} />, perm: 'page.students' },
+        { path: '/admin/attendance', label: 'Student Attendance', icon: <IconChecklist size={20} />, perm: 'page.attendance' },
+        { path: '/admin/grades', label: 'Gradebook', icon: <IconTrophy size={20} />, perm: 'page.gradebook' },
+        { path: '/admin/performance', label: 'Performance', icon: <IconChartBar size={20} />, perm: 'page.performance' },
+        { path: '/admin/results', label: 'My Results', icon: <IconReportAnalytics size={20} />, perm: 'page.results' },
+        { path: '/admin/materials', label: 'Materials', icon: <IconFileText size={20} />, perm: 'page.materials' },
+        { path: '/admin/finance', label: 'Finance', icon: <IconCash size={20} />, perm: 'page.finance' },
+        { path: '/admin/library', label: 'Library', icon: <IconBooks size={20} />, perm: 'page.library' },
+        { path: '/admin/lecturers', label: 'Lecturers', icon: <IconSchool size={20} />, perm: 'page.lecturers' },
+        { path: '/admin/staff-attendance', label: 'Staff Attendance', icon: <IconUsers size={20} />, perm: 'page.staffAttendance' },
+        { path: '/admin/student-groups', label: 'Classes', icon: <IconUsersGroup size={20} />, perm: 'page.groups' },
+        { path: '/admin/courses', label: 'Courses', icon: <IconBook size={20} />, perm: 'page.academics' },
+        { path: '/admin/programs', label: 'Programs', icon: <IconCertificate size={20} />, perm: 'page.academics' },
+        { path: '/admin/rooms', label: 'Rooms', icon: <IconBuilding size={20} />, perm: 'page.academics' },
+        { path: '/admin/broadcast', label: 'Broadcast', icon: <IconSpeakerphone size={20} />, perm: 'page.broadcast' },
+        { path: '/admin/users', label: 'System Users', icon: <IconUsers size={20} />, perm: 'page.users' },
+        { path: '/admin/settings', label: 'Settings', icon: <IconSettings size={20} /> },
     ];
-    const filteredNavItems = navItems.filter(item => item.roles.includes(user?.role));
+    const filteredNavItems = navItems.filter(item => !item.perm || can(user, item.perm));
 
     const location = useLocation();
     const currentNavItem = navItems.find(item => {

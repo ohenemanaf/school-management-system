@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
+import { can } from '../../config/permissions';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -86,6 +87,7 @@ const AttendancePortal = () => {
     };
 
     const isStudent = user?.role === 'STUDENT';
+    const canRecord = can(user, 'attendance.record');
 
     return (
         <div className="page w-full  box-border">
@@ -94,7 +96,7 @@ const AttendancePortal = () => {
                 <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">Track and manage student presence via Fast-Tap Bulk mode.</p>
             </div>
 
-            {!isStudent && (
+            {canRecord && (
                 <div className="glass p-6 rounded-2xl md:rounded-3xl shadow-sm mb-8">
                     <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4 flex items-center justify-between">
                         Fast-Tap Bulk Attendance

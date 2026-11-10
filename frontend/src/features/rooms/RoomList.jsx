@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
+import { can } from '../../config/permissions';
 import { useAuth } from '../../context/AuthContext';
 import { IconBuilding, IconPlus, IconX, IconTrash } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
@@ -10,7 +11,7 @@ const RoomList = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({ name: '', capacity: 30 });
     const { user } = useAuth();
-    const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(user?.role);
+    const isAdmin = can(user, 'academics.manage');
 
     useEffect(() => {
         fetchRooms();

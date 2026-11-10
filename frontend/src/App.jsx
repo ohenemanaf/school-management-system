@@ -6,6 +6,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import AdminLayout from './layouts/AdminLayout';
 import Login from './features/auth/Login';
 import ForcePasswordChange from './features/auth/ForcePasswordChange';
+import { can } from './config/permissions';
 
 // Pages load on demand so the first screen does not download every feature (charts, finance, library...).
 const Dashboard = lazy(() => import('./features/dashboard/Dashboard'));
@@ -27,6 +28,7 @@ const FinanceDashboard = lazy(() => import('./features/finance/FinanceDashboard'
 const LibraryDashboard = lazy(() => import('./features/library/LibraryDashboard'));
 const CourseList = lazy(() => import('./features/courses/CourseList'));
 const ProgramList = lazy(() => import('./features/programs/ProgramList'));
+const Performance = lazy(() => import('./features/performance/Performance'));
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -36,12 +38,10 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-const RequireRole = ({ children, allowedRoles }) => {
+const RequirePermission = ({ children, perm }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (!user || !allowedRoles.includes(user.role)) {
-    return <Navigate to="/admin" replace />;
-  }
+  if (!can(user, perm)) return <Navigate to="/admin" replace />;
   return children;
 };
 
@@ -69,23 +69,24 @@ function App() {
               </ProtectedRoute>
             }>
               <Route index element={<Dashboard />} />
-              <Route path="timetable" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER', 'STUDENT']}><Timetable /></RequireRole>} />
-              <Route path="attendance" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER']}><AttendancePortal /></RequireRole>} />
-              <Route path="staff-attendance" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN']}><StaffAttendance /></RequireRole>} />
-              <Route path="grades" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER']}><Gradebook /></RequireRole>} />
-              <Route path="materials" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER', 'STUDENT']}><MaterialUpload /></RequireRole>} />
-              <Route path="students" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER', 'ACCOUNTANT']}><StudentList /></RequireRole>} />
-              <Route path="users" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'ADMIN']}><UserList /></RequireRole>} />
-              <Route path="lecturers" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN']}><LecturerList /></RequireRole>} />
-              <Route path="courses" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN']}><CourseList /></RequireRole>} />
-              <Route path="programs" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN']}><ProgramList /></RequireRole>} />
-              <Route path="student-groups" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER']}><StudentGroupList /></RequireRole>} />
-              <Route path="rooms" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN']}><RoomList /></RequireRole>} />
+              <Route path="timetable" element={<RequirePermission perm="page.timetable"><Timetable /></RequirePermission>} />
+              <Route path="attendance" element={<RequirePermission perm="page.attendance"><AttendancePortal /></RequirePermission>} />
+              <Route path="staff-attendance" element={<RequirePermission perm="page.staffAttendance"><StaffAttendance /></RequirePermission>} />
+              <Route path="grades" element={<RequirePermission perm="page.gradebook"><Gradebook /></RequirePermission>} />
+              <Route path="materials" element={<RequirePermission perm="page.materials"><MaterialUpload /></RequirePermission>} />
+              <Route path="students" element={<RequirePermission perm="page.students"><StudentList /></RequirePermission>} />
+              <Route path="users" element={<RequirePermission perm="page.users"><UserList /></RequirePermission>} />
+              <Route path="lecturers" element={<RequirePermission perm="page.lecturers"><LecturerList /></RequirePermission>} />
+              <Route path="courses" element={<RequirePermission perm="page.academics"><CourseList /></RequirePermission>} />
+              <Route path="programs" element={<RequirePermission perm="page.academics"><ProgramList /></RequirePermission>} />
+              <Route path="student-groups" element={<RequirePermission perm="page.groups"><StudentGroupList /></RequirePermission>} />
+              <Route path="rooms" element={<RequirePermission perm="page.academics"><RoomList /></RequirePermission>} />
               <Route path="settings" element={<Settings />} />
-              <Route path="broadcast" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT']}><BroadcastCenter /></RequireRole>} />
-              <Route path="results" element={<RequireRole allowedRoles={['STUDENT']}><StudentResults /></RequireRole>} />
-              <Route path="finance" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT', 'STUDENT']}><FinanceDashboard /></RequireRole>} />
-              <Route path="library" element={<RequireRole allowedRoles={['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LIBRARIAN', 'STUDENT', 'LECTURER']}><LibraryDashboard /></RequireRole>} />
+              <Route path="broadcast" element={<RequirePermission perm="page.broadcast"><BroadcastCenter /></RequirePermission>} />
+              <Route path="performance" element={<RequirePermission perm="page.performance"><Performance /></RequirePermission>} />
+              <Route path="results" element={<RequirePermission perm="page.results"><StudentResults /></RequirePermission>} />
+              <Route path="finance" element={<RequirePermission perm="page.finance"><FinanceDashboard /></RequirePermission>} />
+              <Route path="library" element={<RequirePermission perm="page.library"><LibraryDashboard /></RequirePermission>} />
             </Route>
           </Routes>
           </Suspense>

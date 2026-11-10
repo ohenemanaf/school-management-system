@@ -145,6 +145,20 @@
 }
 
 @custom-variant dark (&:is(.dark *));
+
+/* Chart tokens: one validated series hue per theme, plus recessive grid and labels. */
+:root {
+  --viz-series-1: #2a78d6;
+  --viz-grid: #e2e8f0;
+  --viz-text-secondary: #64748b;
+  --viz-hover: rgba(148, 163, 184, 0.12);
+}
+.dark {
+  --viz-series-1: #3987e5;
+  --viz-grid: #334155;
+  --viz-text-secondary: #94a3b8;
+  --viz-hover: rgba(148, 163, 184, 0.10);
+}
 /* Shared admin UI: one page rhythm and readable, restrained typography. */
 .app-shell { font-size: 0.875rem; }
 .app-shell .page {

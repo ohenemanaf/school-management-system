@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
+import { can } from '../../config/permissions';
 import toast from 'react-hot-toast';
 import { IconWallet, IconFileInvoice, IconReceipt, IconPlus, IconCurrencyDollar, IconCash, IconCreditCard, IconX, IconCheck } from '@tabler/icons-react';
 
 const FinanceDashboard = () => {
     const { user } = useAuth();
-    const isAdminOrAccountant = ['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT'].includes(user?.role?.toUpperCase().replace(' ', '_'));
+    const showSummary = can(user, 'finance.summary');   // totals
+    const showRecords = can(user, 'finance.records');   // every invoice, defaulters, fee types
+    const ownFees = can(user, 'finance.own');           // a student's own invoices
+    const canManage = can(user, 'finance.manage');      // create and record (accountant)
 
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState('invoices');
     const [stats, setStats] = useState({ totalCollected: 0, pendingDues: 0, totalInvoices: 0, totalPayments: 0 });
     const [invoices, setInvoices] = useState([]);
     const [feeTypes, setFeeTypes] = useState([]);
@@ -29,24 +33,24 @@ const FinanceDashboard = () => {
 
     useEffect(() => {
         fetchData();
-        if (isAdminOrAccountant) {
+        if (canManage) {
             fetchStudents();
         }
-    }, [isAdminOrAccountant]);
+    }, [canManage]);
 
     const fetchData = async () => {
         setLoading(true);
         try {
             const [statsRes, invoicesRes, feesRes, defaultersRes] = await Promise.all([
-                isAdminOrAccountant ? api.get('/finance/stats') : Promise.resolve({ data: {} }),
-                api.get('/finance/invoices'),
-                isAdminOrAccountant ? api.get('/finance/fee-types') : Promise.resolve({ data: [] }),
-                isAdminOrAccountant ? api.get('/finance/defaulters') : Promise.resolve({ data: [] })
+                showSummary ? api.get('/finance/stats') : Promise.resolve({ data: {} }),
+                showRecords || ownFees ? api.get('/finance/invoices') : Promise.resolve({ data: [] }),
+                showRecords ? api.get('/finance/fee-types') : Promise.resolve({ data: [] }),
+                showRecords ? api.get('/finance/defaulters') : Promise.resolve({ data: [] })
             ]);
             
-            if (isAdminOrAccountant) setStats(statsRes.data);
+            if (showSummary) setStats(statsRes.data);
             setInvoices(invoicesRes.data);
-            if (isAdminOrAccountant) {
+            if (showRecords) {
                 setFeeTypes(feesRes.data);
                 setDefaulters(defaultersRes.data);
             }
@@ -131,9 +135,9 @@ const FinanceDashboard = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
                     <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">Finance Dashboard</h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">Manage fees, invoices, and payments</p>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">{canManage ? 'Manage fees, invoices, and payments' : ownFees ? 'Your fees and payments' : 'Fees, invoices, and payments (view only)'}</p>
                 </div>
-                {isAdminOrAccountant && (
+                {canManage && (
                     <div className="flex items-center gap-3">
                         <button 
                             onClick={() => setShowFeeModal(true)}
@@ -152,7 +156,7 @@ const FinanceDashboard = () => {
             </div>
 
             {/* Stats Overview */}
-            {isAdminOrAccountant && (
+            {showSummary && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-500">
@@ -194,15 +198,19 @@ const FinanceDashboard = () => {
                 </div>
             )}
 
+            {!showRecords && !ownFees && (
+                <p className="text-sm text-slate-500 dark:text-slate-400">Individual fee records are kept by the accountant. The totals above are updated as payments are recorded.</p>
+            )}
+
             {/* Tabs */}
-            <div className="flex border-b border-slate-200 dark:border-slate-700 mb-6">
+            <div className={`${showRecords || ownFees ? 'flex' : 'hidden'} border-b border-slate-200 dark:border-slate-700 mb-6`}>
                 <button 
                     onClick={() => setActiveTab('invoices')}
                     className={`py-3 px-6 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'invoices' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'}`}
                 >
                     Invoices
                 </button>
-                {isAdminOrAccountant && (
+                {showRecords && (
                     <button 
                         onClick={() => setActiveTab('fees')}
                         className={`py-3 px-6 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'fees' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'}`}
@@ -210,7 +218,7 @@ const FinanceDashboard = () => {
                         Fee Types
                     </button>
                 )}
-                {isAdminOrAccountant && (
+                {showRecords && (
                     <button 
                         onClick={() => setActiveTab('defaulters')}
                         className={`py-3 px-6 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'defaulters' ? 'border-red-600 text-red-600' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'}`}
@@ -221,20 +229,20 @@ const FinanceDashboard = () => {
             </div>
 
             {/* Invoices Tab */}
-            {activeTab === 'invoices' && (
+            {activeTab === 'invoices' && (showRecords || ownFees) && (
                 <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700/60">
                                     <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Invoice #</th>
-                                    {isAdminOrAccountant && <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Student</th>}
+                                    {showRecords && <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Student</th>}
                                     <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Fee Type</th>
                                     <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Amount Due</th>
                                     <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Amount Paid</th>
                                     <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
                                     <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Due Date</th>
-                                    {isAdminOrAccountant && <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>}
+                                    {canManage && <th className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -246,7 +254,7 @@ const FinanceDashboard = () => {
                                     invoices.map(invoice => (
                                         <tr key={invoice.id} className="hover:bg-slate-50 dark:bg-slate-900/50 transition-colors">
                                             <td className="p-4 font-semibold text-slate-800 dark:text-slate-100">INV-{invoice.id.toString().padStart(5, '0')}</td>
-                                            {isAdminOrAccountant && (
+                                            {showRecords && (
                                                 <td className="p-4">
                                                     <p className="font-semibold text-slate-800 dark:text-slate-100">{invoice.first_name} {invoice.last_name}</p>
                                                     <p className="text-xs text-slate-500 dark:text-slate-400">{invoice.enrollment_number}</p>
@@ -257,7 +265,7 @@ const FinanceDashboard = () => {
                                             <td className="p-4 font-medium text-green-600">{formatCurrency(invoice.amount_paid)}</td>
                                             <td className="p-4">{getStatusBadge(invoice.status)}</td>
                                             <td className="p-4 font-medium text-slate-600 dark:text-slate-300">{new Date(invoice.due_date).toLocaleDateString()}</td>
-                                            {isAdminOrAccountant && (
+                                            {canManage && (
                                                 <td className="p-4">
                                                     {invoice.status !== 'Paid' && (
                                                         <button 
@@ -283,7 +291,7 @@ const FinanceDashboard = () => {
             )}
 
             {/* Defaulters Tab */}
-            {activeTab === 'defaulters' && isAdminOrAccountant && (
+            {activeTab === 'defaulters' && showRecords && (
                 <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
@@ -321,7 +329,7 @@ const FinanceDashboard = () => {
             )}
 
             {/* Fee Types Tab */}
-            {activeTab === 'fees' && isAdminOrAccountant && (
+            {activeTab === 'fees' && showRecords && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {feeTypes.length === 0 ? (
                         <div className="col-span-full p-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/60 text-slate-500 dark:text-slate-400">

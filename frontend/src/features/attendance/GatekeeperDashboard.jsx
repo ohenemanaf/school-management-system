@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import api from '../../utils/api';
+import { can } from '../../config/permissions';
 import { IconShieldCheck, IconLogout } from '@tabler/icons-react';
 
 const GatekeeperDashboard = () => {
@@ -9,7 +10,7 @@ const GatekeeperDashboard = () => {
     const [token, setToken] = useState('...');
     const [loading, setLoading] = useState(true);
 
-    const canAccess = ['GATEKEEPER', 'ADMIN', 'SUPER_ADMIN'].includes(user?.role);
+    const canAccess = can(user, 'page.gate');
 
     const fetchToken = async () => {
         try {

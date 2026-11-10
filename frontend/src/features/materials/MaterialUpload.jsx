@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api, { fileUrl } from '../../utils/api';
+import { can } from '../../config/permissions';
 import { lecturerName } from '../../utils/people';
 import { useAuth } from '../../context/AuthContext';
 import { IconDownload } from '@tabler/icons-react';
@@ -20,7 +21,7 @@ const MaterialUpload = () => {
     }, []);
 
     const fetchData = async () => {
-        if (user?.role === 'STUDENT') return; // students only read materials
+        if (!can(user, 'materials.manage')) return; // only lecturers share materials
         try {
             const groupsRes = await api.get('/student-groups');
             setStudentGroupsList(groupsRes.data);
@@ -61,7 +62,7 @@ const MaterialUpload = () => {
         }
     };
 
-    const isStudent = user?.role === 'STUDENT';
+    const canShare = can(user, 'materials.manage');
 
     return (
         <div className="page w-full  box-border">
@@ -70,7 +71,7 @@ const MaterialUpload = () => {
                 <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">Access and distribute course content.</p>
             </div>
 
-            {!isStudent && (
+            {canShare && (
                 <div className="glass p-6 rounded-2xl md:rounded-3xl shadow-sm mb-8">
                     <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Upload Content</h2>
                     <form onSubmit={handleUpload} className="grid grid-cols-1 md:grid-cols-5 gap-4">

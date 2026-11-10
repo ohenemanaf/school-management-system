@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import api, { fileUrl } from '../../utils/api';
+import { can } from '../../config/permissions';
 import { useAuth } from '../../context/AuthContext';
 import { IconSearch, IconPlus, IconEdit, IconTrash, IconSchool, IconX, IconUpload, IconFileSpreadsheet } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
@@ -31,7 +32,7 @@ const StudentList = () => {
     const fileInputRef = useRef(null);
 
     const { user } = useAuth();
-    const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(user?.role);
+    const isAdmin = can(user, 'students.manage');
 
     useEffect(() => {
         fetchStudents();
