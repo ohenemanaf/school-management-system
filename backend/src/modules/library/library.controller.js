@@ -1,4 +1,5 @@
 const LibraryModel = require('./library.model');
+const { signFields } = require('../../utils/signedUploads');
 
 class LibraryController {
     // === STATS ===
@@ -16,7 +17,7 @@ class LibraryController {
     static async getAllBooks(req, res) {
         try {
             const books = await LibraryModel.getAllBooks();
-            res.json(books);
+            res.json(signFields(books, 'pdf_url'));
         } catch (error) {
             console.error('Error fetching books:', error);
             res.status(500).json({ message: 'Server error' });
@@ -87,7 +88,7 @@ class LibraryController {
                 }
             }
             const assignments = await LibraryModel.getClassAssignments(studentGroupId);
-            res.json(assignments);
+            res.json(signFields(assignments, 'pdf_url'));
         } catch (error) {
             console.error('Error fetching class assignments:', error);
             res.status(500).json({ message: 'Server error' });

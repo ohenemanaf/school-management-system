@@ -1,6 +1,7 @@
 const MaterialsModel = require('./materials.model');
 const db = require('../../config/db');
 const { lecturerIdFor } = require('../../utils/currentProfile');
+const { signFields } = require('../../utils/signedUploads');
 
 class MaterialsController {
     static async getAll(req, res) {
@@ -16,7 +17,7 @@ class MaterialsController {
                 materials = await MaterialsModel.findAll();
             }
 
-            res.json(materials);
+            res.json(signFields(materials, 'file_url'));
         } catch (error) {
             console.error('Error fetching materials:', error);
             res.status(500).json({ message: 'Server error' });

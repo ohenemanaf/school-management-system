@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../../config/db');
 const { secret: jwtSecret } = require('../../config/jwt');
 const { validatePassword, hashPassword } = require('../../utils/passwords');
+const { signUploadUrl } = require('../../utils/signedUploads');
 
 async function displayNameFor(user) {
     const fallback = user.email.split('@')[0];
@@ -91,7 +92,7 @@ class UserController {
                 );
                 if (rows.length > 0) {
                     profile.studentId = rows[0].id;
-                    profile.profileImageUrl = rows[0].profile_image_url;
+                    profile.profileImageUrl = signUploadUrl(rows[0].profile_image_url);
                     profile.enrollmentNumber = rows[0].enrollment_number;
                     profile.gender = rows[0].gender;
                     profile.studentGroupId = rows[0].student_group_id;

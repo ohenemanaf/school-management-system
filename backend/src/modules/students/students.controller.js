@@ -1,12 +1,13 @@
 const StudentModel = require('./students.model');
 const UserModel = require('../users/users.model');
 const emailService = require('../../utils/emailService');
+const { signFields } = require('../../utils/signedUploads');
 const { validatePassword, generateTemporaryPassword, hashPassword } = require('../../utils/passwords');
 class StudentController {
     static async getAll(req, res) {
         try {
             const students = await StudentModel.findAll({ studentGroupId: req.query.student_group_id });
-            res.json(students);
+            res.json(signFields(students, 'profile_image_url'));
         } catch (error) {
             console.error('Error fetching students:', error);
             res.status(500).json({ message: 'Server error' });
@@ -17,7 +18,7 @@ class StudentController {
         try {
             const student = await StudentModel.findById(req.params.id);
             if (!student) return res.status(404).json({ message: 'Student not found' });
-            res.json(student);
+            res.json(signFields(student, 'profile_image_url'));
         } catch (error) {
             console.error('Error fetching student:', error);
             res.status(500).json({ message: 'Server error' });

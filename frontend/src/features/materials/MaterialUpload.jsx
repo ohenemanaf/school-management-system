@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../../utils/api';
+import api, { fileUrl } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { IconDownload } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
@@ -102,7 +102,7 @@ const MaterialUpload = () => {
                             </div>
                             <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50 min-w-0">
                                 <span className="text-xs font-semibold text-slate-400 shrink-0">{new Date(mat.created_at).toLocaleDateString()}</span>
-                                <a href={mat.file_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-primary-600 bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 px-3 py-1.5 rounded-lg transition-colors shrink-0">
+                                <a href={fileUrl(mat.file_url)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-primary-600 bg-slate-100 dark:bg-slate-800 hover:bg-primary-50 px-3 py-1.5 rounded-lg transition-colors shrink-0">
                                     <IconDownload size={16} />
                                     Open
                                 </a>

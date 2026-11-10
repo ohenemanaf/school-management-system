@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const db = require('./config/db');
 const errorHandler = require('./core/middlewares/error.middleware');
+const { requireSignedUpload } = require('./utils/signedUploads');
 
 const app = express();
 app.disable('x-powered-by');
@@ -18,7 +19,8 @@ app.use((req, res, next) => {
     next();
 });
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+// Uploaded files are private: only signed links handed out by the API work.
+app.use('/uploads', requireSignedUpload, express.static(path.join(__dirname, '../public/uploads'), { index: false, redirect: false }));
 
 app.use('/api/users', require('./modules/users/users.routes'));
 app.use('/api/students', require('./modules/students/students.routes'));
