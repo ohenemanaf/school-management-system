@@ -103,6 +103,7 @@ const as = (who) => ({
     post: (url, body) => request(app).post(url).set('Authorization', auth[who]).send(body),
     put: (url, body) => request(app).put(url).set('Authorization', auth[who]).send(body),
 });
+const admin_db = async (sql, params) => { await admin.query(`USE ${FRESH}`); return admin.query(sql, params); };
 const ok = (res, status = 200) => assert.strictEqual(res.status, status, JSON.stringify(res.body));
 
 test('profiles resolve role-specific ids and names', { skip }, async () => {
@@ -274,6 +275,88 @@ test('every role dashboard loads from real data', { skip }, async () => {
     const accountant = await as('accountant').get('/api/dashboard');
     assert.ok(accountant.body.sections.financeTotals.billed >= 500);
     assert.ok(Array.isArray(accountant.body.sections.financeDesk.recentPayments));
+});
+
+test('timetable generator: set up a term, generate, publish, remind', { skip }, async () => {
+    const admin = as('admin');
+    const { verifyTimetable } = require('../src/modules/scheduler/engine');
+    // A second teacher and two more subjects.
+    const hash = await bcrypt.hash(PASSWORD, 10);
+    const [lecRole] = await admin_db('SELECT id FROM roles WHERE name = ?', ['LECTURER']);
+    const [u2] = await admin_db('INSERT INTO users (role_id, email, password_hash) VALUES (?, ?, ?)', [lecRole[0].id, 'english@it.test', hash]);
+    const [l2] = await admin_db("INSERT INTO lecturers (user_id, first_name, last_name, department) VALUES (?, 'Yaw', 'Mensah', 'Languages')", [u2.insertId]);
+    const [sci] = await admin_db("INSERT INTO courses (name, code) VALUES ('Science', 'SC1')");
+    const [eng] = await admin_db("INSERT INTO courses (name, code) VALUES ('English', 'EN1')");
+
+    ok(await admin.put('/api/scheduler/bell', { periods: [
+        { label: 'P1', start_time: '08:00', end_time: '08:45', kind: 'LESSON' },
+        { label: 'P2', start_time: '08:45', end_time: '09:30', kind: 'LESSON' },
+        { label: 'Break', start_time: '09:30', end_time: '10:00', kind: 'BREAK' },
+        { label: 'P3', start_time: '10:00', end_time: '10:45', kind: 'LESSON' },
+        { label: 'P4', start_time: '10:45', end_time: '11:30', kind: 'LESSON' },
+        { label: 'P5', start_time: '12:15', end_time: '13:00', kind: 'LESSON' },
+        { label: 'P6', start_time: '13:00', end_time: '13:45', kind: 'LESSON' },
+    ] }));
+    const term = await admin.post('/api/terms', { name: 'Term 1', start_date: '2026-09-07', end_date: '2026-12-18', is_current: true });
+    ok(term, 201);
+    const termId = term.body.id;
+    ok(await admin.post(`/api/terms/${termId}/exams`, { name: 'Mid-term exams', start_date: '2026-11-17', end_date: '2026-11-19', alert_days: '7,1', audience: 'ALL' }), 201);
+
+    const gold = await admin.post('/api/scheduler/streams', { name: 'Gold' });
+    const diamond = await admin.post('/api/scheduler/streams', { name: 'Diamond' });
+    ok(await admin.put(`/api/scheduler/classes/${ids.group}/stream`, { stream_id: gold.body.id }));
+    ok(await admin.put(`/api/scheduler/classes/${ids.otherGroup}/stream`, { stream_id: diamond.body.id }));
+    ok(await admin.put(`/api/scheduler/subjects/${ids.course}`, { is_heavy: true }));
+    ok(await admin.put(`/api/scheduler/teachers/${ids.lecturer}`, { maxPerWeek: 20, maxPerDay: 5, subjects: [{ courseId: ids.course, proficiency: 3 }, { courseId: sci.insertId, proficiency: 2 }] }));
+    ok(await admin.put(`/api/scheduler/teachers/${l2.insertId}`, { maxPerWeek: 20, maxPerDay: 5, subjects: [{ courseId: eng.insertId, proficiency: 3 }] }));
+    ok(await admin.put(`/api/scheduler/allocations/${ids.group}`, { termId, items: [
+        { courseId: ids.course, periodsPerWeek: 4 }, { courseId: sci.insertId, periodsPerWeek: 3 }, { courseId: eng.insertId, periodsPerWeek: 3 },
+    ] }));
+    ok(await admin.post('/api/scheduler/allocations/copy', { termId, fromGroupId: ids.group, toGroupIds: [ids.otherGroup] }));
+
+    const setup = await admin.get(`/api/scheduler/setup?term_id=${termId}`);
+    ok(setup);
+    assert.strictEqual(setup.body.allocations.length, 6);
+    assert.strictEqual(setup.body.bell.length, 7);
+
+    const run = await admin.post('/api/scheduler/generate', { termId, seed: 5 });
+    ok(run, 201);
+    assert.strictEqual(run.body.status, 'DRAFT');
+    assert.strictEqual(run.body.required, 20);
+    assert.strictEqual(run.body.placed, 20);
+    assert.deepStrictEqual(run.body.report.unplaced, []);
+    const lessons = run.body.lessons.map((l) => ({ classId: l.student_group_id, teacherId: l.lecturer_id, roomId: l.room_id, day: l.day_of_week, period: l.period_no }));
+    assert.deepStrictEqual(verifyTimetable(lessons), []);
+    assert.ok(run.body.lessons.every((l) => l.start_time && l.lecturer_name));
+
+    const published = await admin.post(`/api/scheduler/runs/${run.body.id}/publish`);
+    ok(published);
+    assert.strictEqual(published.body.published, 20);
+    assert.strictEqual((await admin.post(`/api/scheduler/runs/${run.body.id}/publish`)).status, 409, 'cannot publish twice');
+    const [[live]] = await admin_db('SELECT COUNT(*) AS n FROM timetable_sessions WHERE student_group_id IN (?, ?)', [ids.group, ids.otherGroup]);
+    assert.strictEqual(live.n, 20);
+    const studentView = await as('student').get('/api/timetable');
+    assert.strictEqual(studentView.body.length, 10, 'a student sees their own class timetable');
+
+    // Reminders for Tuesday 10 November 2026: preview, send, never twice.
+    const preview = await admin.post('/api/reminders/run', { date: '2026-11-10', preview: true });
+    ok(preview);
+    assert.strictEqual(preview.body.timetable.preview, true);
+    const sent = await admin.post('/api/reminders/run', { date: '2026-11-10' });
+    ok(sent);
+    assert.ok(sent.body.timetable.notified > 0, JSON.stringify(sent.body));
+    assert.strictEqual(sent.body.exams.sent.length, 1, 'the 7-day exam alert');
+    const again = await admin.post('/api/reminders/run', { date: '2026-11-10' });
+    assert.strictEqual(again.body.timetable.skipped, 'already sent today');
+    assert.deepStrictEqual(again.body.exams.sent, []);
+    const weekend = await admin.post('/api/reminders/run', { date: '2026-11-14', preview: true });
+    assert.strictEqual(weekend.body.timetable.skipped, 'weekend');
+
+    const inbox = await as('student').get('/api/notifications');
+    assert.ok(inbox.body.some((n) => n.title.startsWith("Today's timetable")));
+    assert.ok(inbox.body.some((n) => n.title.startsWith('Exams start in 7 days')));
+    const current = await as('student').get('/api/terms/current');
+    assert.strictEqual(current.body.exams.length, 1);
 });
 
 test('upgrade scripts apply cleanly to a database made from the old schema', { skip }, async () => {

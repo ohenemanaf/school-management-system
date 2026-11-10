@@ -267,5 +267,30 @@
   "page.gate": [
     "SUPER_ADMIN",
     "GATEKEEPER"
+  ],
+  "timetable.generate": [
+    "SUPER_ADMIN",
+    "ADMIN"
+  ],
+  "terms.view": [
+    "SUPER_ADMIN",
+    "ADMIN",
+    "HEADMASTER",
+    "ACCOUNTANT",
+    "LIBRARIAN",
+    "LECTURER",
+    "STUDENT"
+  ],
+  "terms.manage": [
+    "SUPER_ADMIN",
+    "ADMIN"
+  ],
+  "reminders.run": [
+    "SUPER_ADMIN",
+    "ADMIN"
+  ],
+  "page.scheduler": [
+    "SUPER_ADMIN",
+    "ADMIN"
   ]
 }
