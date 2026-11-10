@@ -18,3 +18,6 @@ export const greeting = () => {
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
 };
+
+/** Shown on printed documents such as results statements (set VITE_SCHOOL_NAME). */
+export const SCHOOL_NAME = import.meta.env.VITE_SCHOOL_NAME || 'School Management System';

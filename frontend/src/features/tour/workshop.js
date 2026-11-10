@@ -182,7 +182,7 @@ function chapters(user) {
             steps: [{
                 target: { text: 'Input Grade' },
                 title: 'Entering grades',
-                body: 'Choose one of your classes, the student, the assessment name and the score out of the maximum. Only you, as the class lecturer, and the student themself can see named grades. School leaders only see averages.',
+                body: 'Choose one of your classes, the subject, and whether the mark is class work (quiz, test, assignment) or the exam. Then enter the student, the assessment name and the score out of the maximum.\n\nClass work and the exam combine into each student\'s semester result (30% and 70% by default). Only you and the student see named grades; school leaders only see averages.',
             }],
         },
         {
@@ -193,15 +193,15 @@ function chapters(user) {
             steps: [{
                 target: '.page h1',
                 title: 'Results without names',
-                body: 'Average scores, pass rates and how marks are spread, by class and by assessment. No student is named here. A class with fewer than 3 graded students is hidden, so nobody\'s mark can be worked out from an average.',
+                body: 'Average scores, pass rates and how marks are spread, by class and by assessment. No student is named here. A class with fewer than 3 graded students is hidden, so nobody\'s mark can be worked out from an average.' + (manage('results.release') ? '\n\nAt the top you release each term\'s results to students when marking is finished. Until then, students cannot see their statement.' : ''),
             }],
         },
         {
             id: 'results',
-            title: 'My results',
+            title: 'Semester results',
             route: '/admin/results',
             perm: 'page.results',
-            steps: [{ target: '.page h1', title: 'Your results', body: 'Every graded assessment, with your score and percentage. Only you and your lecturer can see these.' }],
+            steps: [{ target: '.page h1', title: 'Your semester statement', body: 'Once the school releases a term, your full statement appears here: class work and exam marks for every subject, the total, grade and grade point, your semester and cumulative GPA, and your attendance.\n\nChoose the term at the top and press Print / Save PDF to print it or keep a copy.' }],
         },
         {
             id: 'materials',

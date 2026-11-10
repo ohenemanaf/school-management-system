@@ -107,7 +107,7 @@ const AdminLayout = () => {
         { path: '/admin/attendance', label: 'Student Attendance', icon: <IconChecklist size={20} />, perm: 'page.attendance' },
         { path: '/admin/grades', label: 'Gradebook', icon: <IconTrophy size={20} />, perm: 'page.gradebook' },
         { path: '/admin/performance', label: 'Performance', icon: <IconChartBar size={20} />, perm: 'page.performance' },
-        { path: '/admin/results', label: 'My Results', icon: <IconReportAnalytics size={20} />, perm: 'page.results' },
+        { path: '/admin/results', label: 'Semester Results', icon: <IconReportAnalytics size={20} />, perm: 'page.results' },
         { path: '/admin/materials', label: 'Materials', icon: <IconFileText size={20} />, perm: 'page.materials' },
         { path: '/admin/finance', label: 'Finance', icon: <IconCash size={20} />, perm: 'page.finance' },
         { path: '/admin/library', label: 'Library', icon: <IconBooks size={20} />, perm: 'page.library' },

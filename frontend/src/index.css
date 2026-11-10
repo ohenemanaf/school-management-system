@@ -146,6 +146,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Printing: only the copy rendered for print (outside the app layout) is printed. */
+.print-only { display: none; }
+@media print {
+  @page { size: A4; margin: 12mm; }
+  #root { display: none !important; }
+  .print-only { display: block !important; }
+  html, body { background: #fff !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .statement tr, .break-inside-avoid { break-inside: avoid; }
+}
+
 /* Chart tokens: one validated series hue per theme, plus recessive grid and labels. */
 :root {
   --viz-series-1: #2a78d6;

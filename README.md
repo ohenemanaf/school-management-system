@@ -49,6 +49,12 @@ Every school day at 07:00 (server time; set `TZ`, change with `REMINDER_TIME`) e
 
 To try it with demo data: `npm run seed:scheduler-demo` in `backend` (fills only empty setup, never publishes; refuses to run in production). Existing databases need `backend/upgrades/003-timetable-generator.sql`.
 
+## Semester results
+
+Lecturers record each mark against a subject they teach that class, as **class work** (quizzes, tests, assignments) or the **exam**; marks are filed under the current term. A student's semester statement combines them per subject (class work 30%, exam 70% by default; set per term), applies the grading scale in the `grading_scale` table (A 80-100 = 4.0 … F below 50) and the subject's credit hours, and shows the total, grade, grade point and remark for every subject, the semester and cumulative GPA, the weighted average and attendance.
+
+Students only see a term after a super admin or admin releases it (Performance page). Students open **Semester Results** to view, print or save their statement as PDF; the printout is a clean A4 page. Set `VITE_SCHOOL_NAME` in `frontend/.env` for the name printed at the top. Existing databases need `backend/upgrades/004-semester-results.sql`; `npm run seed:results-demo` adds demo marks for the current term and releases it.
+
 ## Repository structure
 
 - `frontend/src/`: application screens, layout, shared styles and API client

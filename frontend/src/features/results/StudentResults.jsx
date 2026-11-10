@@ -1,262 +1,107 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import toast from 'react-hot-toast';
+import { IconPrinter, IconReportAnalytics, IconLock } from '@tabler/icons-react';
 import api from '../../utils/api';
-import { 
-    IconReportAnalytics, 
-    IconTrendingUp, 
-    IconTrophy,
-    IconBooks,
-    IconAward
-} from '@tabler/icons-react';
-import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-    LineChart, Line,
-    Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
-} from 'recharts';
+import { SCHOOL_NAME } from '../../utils/format';
+import ResultStatement from './ResultStatement';
 
+// A student's semester results: choose a released term, read the statement,
+// print it or save it as PDF from the print dialog.
 const StudentResults = () => {
-    const [grades, setGrades] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [terms, setTerms] = useState(null);
+    const [termId, setTermId] = useState('');
+    const [statement, setStatement] = useState(null);
+    const [state, setState] = useState('idle'); // idle | loading | ready | not-released
+    const [showBreakdown, setShowBreakdown] = useState(false);
 
     useEffect(() => {
-        const fetchGrades = async () => {
-            try {
-                const response = await api.get('/grades');
-                setGrades(response.data);
-            } catch (error) {
-                console.error('Failed to fetch grades:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchGrades();
+        api.get('/results/terms')
+            .then(({ data }) => {
+                setTerms(data);
+                const first = data.find((t) => t.results_released && t.graded > 0) || data.find((t) => t.results_released) || data[0];
+                if (first) setTermId(String(first.id));
+            })
+            .catch(() => { setTerms([]); toast.error('Could not load your terms'); });
     }, []);
 
-    if (loading) {
-        return (
-        <div className="page flex justify-center items-center h-full min-h-[400px]">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
-            </div>
-        );
-    }
+    useEffect(() => {
+        if (!termId) return;
+        setState('loading');
+        setStatement(null);
+        api.get('/results/statement', { params: { term_id: termId } })
+            .then(({ data }) => { setStatement(data); setState('ready'); })
+            .catch((error) => {
+                if (error.response?.data?.code === 'NOT_RELEASED') setState('not-released');
+                else { setState('idle'); toast.error(error.response?.data?.message || 'Could not load your results'); }
+            });
+    }, [termId]);
 
-    // --- Data Processing ---
-    // 1. Map to raw percentages
-    const processedGrades = grades.map(g => ({
-        ...g,
-        percentage: (Number(g.score) / Number(g.max_score)) * 100,
-        dateObj: new Date(g.created_at)
-    }));
-
-    // 2. Compute Overall Stats
-    const totalAssessments = processedGrades.length;
-    const overallAverage = totalAssessments > 0 
-        ? processedGrades.reduce((acc, curr) => acc + curr.percentage, 0) / totalAssessments 
-        : 0;
-
-    // 3. Subject Averages (For Bar Chart & Radar & Best Subject)
-    const subjectMap = {};
-    processedGrades.forEach(g => {
-        if (!subjectMap[g.class_name]) {
-            subjectMap[g.class_name] = { totalPercentage: 0, count: 0 };
-        }
-        subjectMap[g.class_name].totalPercentage += g.percentage;
-        subjectMap[g.class_name].count += 1;
-    });
-
-    const subjectData = Object.keys(subjectMap).map(subject => ({
-        subject,
-        average: Number((subjectMap[subject].totalPercentage / subjectMap[subject].count).toFixed(2)),
-        fullMark: 100
-    }));
-
-    // Find Best Subject
-    let bestSubject = { name: 'N/A', average: 0 };
-    subjectData.forEach(sub => {
-        if (sub.average > bestSubject.average) {
-            bestSubject = { name: sub.subject, average: sub.average };
-        }
-    });
-
-    // 4. Trend over time (Line Chart)
-    // Sort chronological
-    const trendData = [...processedGrades]
-        .sort((a, b) => a.dateObj - b.dateObj)
-        .map(g => ({
-            name: g.assessment_name,
-            score: Number(g.percentage.toFixed(2)),
-            subject: g.class_name
-        }));
+    const selected = terms?.find((t) => String(t.id) === termId);
 
     return (
-        <div className="page space-y-8">
-            {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-semibold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">
-                    <IconReportAnalytics size={36} className="text-primary-600" />
-                    My Results & Analysis
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Track your academic progress and analytical performance.</p>
-            </div>
-
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6 relative overflow-hidden group">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-primary-500 to-indigo-400 opacity-10 rounded-bl-full transition-transform group-hover:scale-110"></div>
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-indigo-400 text-white flex items-center justify-center mb-4 shadow-lg">
-                        <IconTrendingUp size={24} />
-                    </div>
-                    <p className="text-4xl font-semibold text-slate-800 dark:text-slate-100 mb-1">
-                        {totalAssessments > 0 ? overallAverage.toFixed(1) : '--'}%
-                    </p>
-                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Overall Average</span>
+        <div className="page w-full box-border">
+            <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                        <IconReportAnalytics size={28} className="text-primary-600" /> Semester Results
+                    </h1>
+                    <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">Your full statement for each term: marks, grades, GPA and attendance.</p>
                 </div>
-
-                <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6 relative overflow-hidden group">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-emerald-500 to-teal-400 opacity-10 rounded-bl-full transition-transform group-hover:scale-110"></div>
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-400 text-white flex items-center justify-center mb-4 shadow-lg">
-                        <IconTrophy size={24} />
-                    </div>
-                    <p className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-1 truncate">
-                        {bestSubject.name}
-                    </p>
-                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Best Subject ({bestSubject.average.toFixed(1)}%)</span>
-                </div>
-
-                <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6 relative overflow-hidden group">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-amber-500 to-orange-400 opacity-10 rounded-bl-full transition-transform group-hover:scale-110"></div>
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-400 text-white flex items-center justify-center mb-4 shadow-lg">
-                        <IconBooks size={24} />
-                    </div>
-                    <p className="text-4xl font-semibold text-slate-800 dark:text-slate-100 mb-1">
-                        {totalAssessments}
-                    </p>
-                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Assessments</span>
+                <div className="flex flex-wrap items-center gap-3">
+                    {terms?.length > 0 && (
+                        <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                            Term
+                            <select value={termId} onChange={(e) => setTermId(e.target.value)} className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-800 dark:text-slate-100">
+                                {terms.map((t) => <option key={t.id} value={t.id}>{t.name}{t.results_released ? '' : ' (not released)'}</option>)}
+                            </select>
+                        </label>
+                    )}
+                    {state === 'ready' && (
+                        <>
+                            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                                <input type="checkbox" checked={showBreakdown} onChange={(e) => setShowBreakdown(e.target.checked)} />
+                                Show each assessment
+                            </label>
+                            <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold cursor-pointer">
+                                <IconPrinter size={18} /> Print / Save PDF
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 
-            {totalAssessments === 0 ? (
-                <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 rounded-3xl p-12 text-center shadow-sm">
-                    <IconAward size={48} className="mx-auto text-slate-300 mb-4" />
-                    <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200">No Results Found</h2>
-                    <p className="text-slate-500 dark:text-slate-400 mt-2">Your grades will appear here and graphs will automatically generate once your lecturers publish your results.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    
-                    {/* Performance Trend (Line Chart) */}
-                    <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6 lg:col-span-2">
-                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-                            <span className="w-2 h-6 bg-primary-500 rounded-full"></span>
-                            Performance Trend
-                        </h3>
-                        <div className="h-80 w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={trendData} margin={{ top: 5, right: 30, left: -20, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
-                                    <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                                    <RechartsTooltip 
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                        formatter={(value, name, props) => [`${value}%`, props.payload.subject]}
-                                    />
-                                    <Line type="monotone" dataKey="score" stroke="#6366f1" strokeWidth={4} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 8, strokeWidth: 0 }} />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </div>
+            {terms === null || state === 'loading' ? (
+                <p className="text-sm text-slate-500 dark:text-slate-400">Loading…</p>
+            ) : terms.length === 0 ? (
+                <Message title="No terms yet">Your results will appear here once the school sets up a term.</Message>
+            ) : state === 'not-released' ? (
+                <Message title={`${selected?.name || 'This term'}: results not released yet`} icon>
+                    Your results will appear here as soon as the school releases them. Your lecturers may already have entered marks.
+                </Message>
+            ) : state === 'ready' && statement ? (
+                <>
+                    <div className="overflow-x-auto pb-4">
+                        <ResultStatement data={statement} schoolName={SCHOOL_NAME} showBreakdown={showBreakdown} />
                     </div>
-
-                    {/* Subject Proficiency (Bar Chart) */}
-                    <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6">
-                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-                            <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
-                            Subject Averages
-                        </h3>
-                        <div className="h-72 w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={subjectData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }} layout="vertical">
-                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-                                    <XAxis type="number" domain={[0, 100]} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                                    <YAxis type="category" dataKey="subject" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} width={100} />
-                                    <RechartsTooltip 
-                                        cursor={{fill: '#f8fafc'}}
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                        formatter={(value) => [`${value}%`, 'Average']}
-                                    />
-                                    <Bar dataKey="average" fill="#10b981" radius={[0, 6, 6, 0]} barSize={24} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-
-                    {/* Cognitive Mapping (Radar Chart) */}
-                    <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6">
-                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
-                            <span className="w-2 h-6 bg-amber-500 rounded-full"></span>
-                            Skill Mapping
-                        </h3>
-                        <div className="h-72 w-full flex items-center justify-center">
-                            {subjectData.length >= 3 ? (
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={subjectData}>
-                                        <PolarGrid stroke="#e2e8f0" />
-                                        <PolarAngleAxis dataKey="subject" tick={{fill: '#64748b', fontSize: 11, fontWeight: 'bold'}} />
-                                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                                        <Radar name="Student" dataKey="average" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.4} />
-                                        <RechartsTooltip formatter={(value) => [`${value}%`, 'Proficiency']} />
-                                    </RadarChart>
-                                </ResponsiveContainer>
-                            ) : (
-                                <p className="text-slate-400 text-sm font-medium text-center px-4">Need grades in at least 3 subjects to map cognitive radar.</p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Detailed Grades Table */}
-                    <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6 lg:col-span-2 overflow-hidden flex flex-col">
-                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2 shrink-0">
-                            <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
-                            Recent Assessments
-                        </h3>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
-                                        <th className="px-6 py-4 rounded-tl-xl">Assessment</th>
-                                        <th className="px-6 py-4">Subject</th>
-                                        <th className="px-6 py-4">Date</th>
-                                        <th className="px-6 py-4 text-right">Score</th>
-                                        <th className="px-6 py-4 text-right rounded-tr-xl">Grade</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100/50 text-sm font-medium text-slate-700 dark:text-slate-200">
-                                    {processedGrades.map(g => (
-                                        <tr key={g.id} className="hover:bg-blue-50/30 transition-colors">
-                                            <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-100">{g.assessment_name}</td>
-                                            <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{g.class_name}</td>
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{g.dateObj.toLocaleDateString()}</td>
-                                            <td className="px-6 py-4 text-right font-semibold">
-                                                {g.score} <span className="text-slate-400 text-xs font-normal">/ {g.max_score}</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                                    g.percentage >= 80 ? 'bg-emerald-100 text-emerald-700' :
-                                                    g.percentage >= 60 ? 'bg-blue-100 text-blue-700' :
-                                                    g.percentage >= 40 ? 'bg-amber-100 text-amber-700' :
-                                                    'bg-red-100 text-red-700'
-                                                }`}>
-                                                    {g.percentage >= 80 ? 'A' : g.percentage >= 60 ? 'B' : g.percentage >= 40 ? 'C' : 'F'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            )}
+                    {/* Printed copy, outside the app layout so menus never print. */}
+                    {createPortal(
+                        <div className="print-only">
+                            <ResultStatement data={statement} schoolName={SCHOOL_NAME} showBreakdown={showBreakdown} />
+                        </div>,
+                        document.body
+                    )}
+                </>
+            ) : null}
         </div>
     );
 };
+
+const Message = ({ title, children, icon }) => (
+    <div className="max-w-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 rounded-xl p-6 shadow-sm">
+        <p className="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">{icon && <IconLock size={18} className="text-slate-400" />}{title}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{children}</p>
+    </div>
+);
 
 export default StudentResults;
