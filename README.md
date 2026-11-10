@@ -26,7 +26,13 @@ The frontend reads `VITE_API_URL`, defaulting to `/api`. Vite proxies local API 
 
 Run `npm run lint` and `npm run build` in `frontend`. Lint currently includes existing non-blocking warnings.
 
-Run `npm test` in `backend`. The tests exercise the API (authentication, role access, validation, imports) against a scripted fake database, so they need no MySQL server; they do not prove the SQL itself, so the schema and queries must still be checked on a disposable database before a new deployment.
+Run `npm test` in `backend`. The tests exercise the API (authentication, role access, validation, imports) against a scripted fake database, so they need no MySQL server; they do not prove the SQL itself, so the schema and queries must also be checked on a real MySQL server.
+
+`npm run test:mysql` in `backend` does that against a disposable MySQL 8 server: it drops and recreates the throwaway databases `sms_it_fresh` and `sms_it_upgrade`, runs the main flows through the API, and checks that `backend/upgrades/` turns the previous schema into the current one. Never point it at a server holding real data.
+
+```
+MYSQL_TEST_HOST=127.0.0.1 MYSQL_TEST_PORT=3307 MYSQL_TEST_USER=root MYSQL_TEST_PASSWORD= npm run test:mysql
+```
 
 ## Repository structure
 
