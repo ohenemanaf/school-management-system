@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { can } from '../../config/permissions';
+import HelpMenu from '../tour/HelpMenu';
 import { IconShieldCheck, IconLogout } from '@tabler/icons-react';
 
 const GatekeeperDashboard = () => {
@@ -53,6 +54,7 @@ const GatekeeperDashboard = () => {
             {/* Background glowing effects */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary-500/20 blur-[120px] rounded-full pointer-events-none"></div>
 
+            <HelpMenu tone="dark" className="absolute top-6 right-36 z-20" />
             <button 
                 onClick={logout}
                 className="absolute top-6 right-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors bg-white/5 px-4 py-2 rounded-xl backdrop-blur-md cursor-pointer"
@@ -69,7 +71,7 @@ const GatekeeperDashboard = () => {
                 <h1 className="text-3xl font-bold text-slate-300 mb-2 uppercase tracking-widest">Gatekeeper Active</h1>
                 <p className="text-slate-400 font-medium mb-12">Lecturers must enter this code to check in</p>
 
-                <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-12 md:p-16 rounded-[3rem] shadow-2xl flex items-center justify-center min-w-[300px] md:min-w-[500px]">
+                <div data-tour="gate-code" className="bg-white/10 backdrop-blur-xl border border-white/20 p-12 md:p-16 rounded-[3rem] shadow-2xl flex items-center justify-center min-w-[300px] md:min-w-[500px]">
                     {loading ? (
                         <div className="animate-pulse flex space-x-4">
                             <div className="h-20 w-40 bg-white/20 rounded-2xl"></div>
@@ -90,7 +92,7 @@ const GatekeeperDashboard = () => {
                 </div>
 
                 {checkIns && (
-                    <div className="mt-10 w-full max-w-md bg-white/5 border border-white/10 rounded-2xl p-5">
+                    <div data-tour="gate-list" className="mt-10 w-full max-w-md bg-white/5 border border-white/10 rounded-2xl p-5">
                         <p className="text-sm font-semibold text-slate-300 mb-3">
                             Checked in today: {checkIns.checkedIn.length} of {checkIns.lecturers} lecturers
                         </p>

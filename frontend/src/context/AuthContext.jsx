@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useCallback, useContext, useState, useEffect } from 'react';
 import api from '../utils/api';
 
 const AuthContext = createContext();
@@ -46,6 +46,13 @@ export const AuthProvider = ({ children }) => {
         return loadProfile();
     };
 
+    /** Saves some preferences (merged on the server with the rest) and updates the signed-in user. */
+    const savePreferences = useCallback(async (patch) => {
+        const response = await api.put('/users/preferences', patch);
+        setUser((current) => (current ? { ...current, preferences: response.data.preferences } : current));
+        return response.data.preferences;
+    }, []);
+
     const logout = () => {
         localStorage.removeItem('token');
         setUser(null);
@@ -72,7 +79,7 @@ export const AuthProvider = ({ children }) => {
     }, [user?.preferences]);
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading, refreshUser }}>
+        <AuthContext.Provider value={{ user, login, logout, loading, refreshUser, savePreferences }}>
             {children}
         </AuthContext.Provider>
     );

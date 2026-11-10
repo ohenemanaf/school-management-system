@@ -1,7 +1,7 @@
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert');
 const request = require('supertest');
-const { app, tokenFor, reset, users } = require('./helpers');
+const { app, tokenFor, reset, users, onQuery, calls } = require('./helpers');
 
 beforeEach(reset);
 
@@ -60,4 +60,13 @@ test('super admins cannot deactivate or demote themselves', async () => {
 test('unknown roles are rejected instead of silently ignored', async () => {
     const res = await request(app).put('/api/users/2').set('Authorization', tokenFor('SUPER_ADMIN', { id: 1 })).send({ role: 'WIZARD' });
     assert.strictEqual(res.status, 400);
+});
+
+test('saving some preferences keeps the others (e.g. tour progress)', async () => {
+    onQuery(/SELECT preferences FROM users WHERE id = \?/, [[{ preferences: JSON.stringify({ themeOption: 'dark', workshop: { status: 'completed' } }) }]]);
+    const res = await request(app).put('/api/users/preferences').set('Authorization', tokenFor('STUDENT'))
+        .send({ themeOption: 'light' });
+    assert.strictEqual(res.status, 200);
+    const saved = JSON.parse(calls.find((c) => /UPDATE users SET preferences/.test(c.sql)).params[0]);
+    assert.deepStrictEqual(saved, { themeOption: 'light', workshop: { status: 'completed' } });
 });

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, Suspense } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { can } from '../config/permissions';
+import HelpMenu from '../features/tour/HelpMenu';
 import { useTheme } from '../context/ThemeContext';
 import api from '../utils/api';
 import { 
@@ -161,7 +162,7 @@ const AdminLayout = () => {
                 </div>
 
                 {/* Nav */}
-                <div className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-0.5">
+                <div data-tour="sidebar" className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-0.5">
                     {!isCollapsed && <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-3 mb-2">Menu</p>}
                     {filteredNavItems.map((item) => (
                         <NavLink
@@ -215,8 +216,11 @@ const AdminLayout = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
+                        <HelpMenu />
                         <div className="relative" ref={dropdownRef}>
                             <button 
+                                data-tour="notifications"
+                                aria-label="Notifications"
                                 onClick={() => setNotificationsOpen(!notificationsOpen)}
                                 className={`p-2 rounded-lg transition-colors relative cursor-pointer ${notificationsOpen ? 'bg-primary-50 text-primary-600' : 'text-slate-400 hover:bg-slate-100 dark:bg-slate-800'}`}
                             >
