@@ -1,9 +1,10 @@
 const crypto = require('crypto');
 const AttendanceModel = require('./attendance.model');
 const LecturerAttendanceModel = require('../lecturer_attendance/lecturer_attendance.model');
-const { lecturerIdFor } = require('../../utils/currentProfile');
+const { lecturerIdFor, studentIdFor } = require('../../utils/currentProfile');
 const { localDate, localTime } = require('../../utils/dates');
 
+const STATUSES = ['Present', 'Absent', 'Late'];
 const TOKEN_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O or 1/I
 const TOKEN_LENGTH = 6;
 
@@ -20,10 +21,9 @@ class AttendanceController {
             let attendance;
 
             if (role === 'STUDENT') {
-                const db = require('../../config/db');
-                const [student] = await db.execute('SELECT id FROM students WHERE user_id = ?', [id]);
-                if (student.length === 0) return res.status(404).json({ message: 'Student not found' });
-                attendance = await AttendanceModel.findByStudent(student[0].id);
+                const studentId = await studentIdFor(id);
+                if (!studentId) return res.status(404).json({ message: 'Student not found' });
+                attendance = await AttendanceModel.findByStudent(studentId);
             } else {
                 attendance = await AttendanceModel.findAll();
             }
@@ -38,6 +38,9 @@ class AttendanceController {
     static async mark(req, res) {
         try {
             const { studentId, studentGroupId, date, status } = req.body;
+            if (!studentId || !studentGroupId || !date || !STATUSES.includes(status)) {
+                return res.status(400).json({ message: `studentId, studentGroupId, date and a status of ${STATUSES.join(', ')} are required` });
+            }
             await AttendanceModel.mark(studentId, studentGroupId, date, status);
             res.json({ message: 'Attendance marked successfully' });
         } catch (error) {

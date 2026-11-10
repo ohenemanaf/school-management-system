@@ -20,12 +20,16 @@ class LibraryModel {
         return result.insertId;
     }
 
+    /** Updates only the fields present in `data`; returns affected rows. */
     static async updateBook(id, data) {
-        const { title, author, isbn, category, total_copies, available_copies } = data;
-        await db.execute(
-            'UPDATE books SET title=?, author=?, isbn=?, category=?, total_copies=?, available_copies=? WHERE id=?',
-            [title, author, isbn, category, total_copies, available_copies, id]
+        const fields = ['title', 'author', 'isbn', 'category', 'total_copies', 'available_copies'];
+        const updates = fields.filter((field) => data[field] !== undefined);
+        if (updates.length === 0) return 0;
+        const [result] = await db.execute(
+            `UPDATE books SET ${updates.map((field) => `${field} = ?`).join(', ')} WHERE id = ?`,
+            [...updates.map((field) => data[field]), id]
         );
+        return result.affectedRows;
     }
 
     static async deleteBook(id) {

@@ -14,13 +14,14 @@ class MaterialsModel {
         return rows;
     }
 
-    static async findByStudent(studentId) {
+    static async findByGroup(studentGroupId) {
         const [rows] = await db.execute(`
             SELECT m.id, m.title, m.file_url, m.created_at, sg.name as student_group_name
             FROM materials m
             JOIN student_groups sg ON m.student_group_id = sg.id
+            WHERE m.student_group_id = ?
             ORDER BY m.created_at DESC
-        `);
+        `, [studentGroupId]);
         return rows;
     }
 

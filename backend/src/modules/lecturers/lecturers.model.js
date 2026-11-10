@@ -21,7 +21,7 @@ class LecturerModel {
             const roleId = roles[0].id;
             
             const [userResult] = await connection.execute(
-                'INSERT INTO users (role_id, email, password_hash) VALUES (?, ?, ?)',
+                'INSERT INTO users (role_id, email, password_hash, must_change_password) VALUES (?, ?, ?, 1)',
                 [roleId, email, passwordHash]
             );
             

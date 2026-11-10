@@ -8,12 +8,12 @@ const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
 const Timetable = () => {
     const { user } = useAuth();
-    const isAdmin = user?.role === 'ADMIN';
+    const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(user?.role);
+    const canListLecturers = ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'].includes(user?.role);
     const isLecturer = user?.role === 'LECTURER';
     const isStudent = user?.role === 'STUDENT';
 
     const [slots, setSlots] = useState([]);
-    const [subjects, setSubjects] = useState([]);
     const [courses, setCourses] = useState([]);
     const [studentGroups, setStudentGroups] = useState([]);
     const [rooms, setRooms] = useState([]);
@@ -34,16 +34,16 @@ const Timetable = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Filter controls
-    const [filterGroup, setFilterGroup] = useState('');
-    const [filterLecturer, setFilterLecturer] = useState('');
+    // Students and lecturers start on their own schedule; they can clear the filter to see everything.
+    const [filterGroup, setFilterGroup] = useState(() => (isStudent && user?.studentGroupId ? String(user.studentGroupId) : ''));
+    const [filterLecturer, setFilterLecturer] = useState(() => (isLecturer && user?.lecturerId ? String(user.lecturerId) : ''));
     const [filterRoom, setFilterRoom] = useState('');
 
     useEffect(() => {
-        fetchSubjects();
         fetchCourses();
         fetchStudentGroups();
         fetchRooms();
-        fetchLecturers();
+        if (canListLecturers) fetchLecturers();
     }, []);
 
     useEffect(() => {
@@ -83,15 +83,6 @@ const Timetable = () => {
             setRooms(response.data);
         } catch (error) {
             console.error(error);
-        }
-    };
-
-    const fetchSubjects = async () => {
-        try {
-            const response = await api.get('/subjects');
-            setSubjects(response.data);
-        } catch (error) {
-            console.error('Failed to load subjects', error);
         }
     };
 

@@ -46,6 +46,15 @@ class LibraryController {
     static async updateBook(req, res) {
         try {
             const { id } = req.params;
+            const { total_copies, available_copies } = req.body;
+            for (const value of [total_copies, available_copies]) {
+                if (value !== undefined && (!Number.isInteger(Number(value)) || Number(value) < 0)) {
+                    return res.status(400).json({ message: 'Copy counts must be whole numbers of 0 or more' });
+                }
+            }
+            if (total_copies !== undefined && available_copies !== undefined && Number(available_copies) > Number(total_copies)) {
+                return res.status(400).json({ message: 'Available copies cannot exceed total copies' });
+            }
             await LibraryModel.updateBook(id, req.body);
             res.json({ message: 'Book updated successfully' });
         } catch (error) {

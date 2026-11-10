@@ -18,18 +18,20 @@ const StudentDashboard = () => {
     useEffect(() => {
         const fetchStudentData = async () => {
             try {
-                const [invoicesRes, assignmentsRes, timetableRes, gradesRes, attendanceRes] = await Promise.all([
+                const timetableUrl = user?.studentGroupId ? `/timetable?student_group_id=${user.studentGroupId}` : '/timetable';
+                // allSettled: one failing section should not blank the whole dashboard.
+                const results = await Promise.allSettled([
                     api.get('/finance/invoices'),
                     api.get('/library/assignments'),
-                    api.get('/timetable'),
+                    api.get(timetableUrl),
                     api.get('/grades'),
                     api.get('/attendance')
                 ]);
-                setInvoices(invoicesRes.data);
-                setAssignments(assignmentsRes.data);
-                setTimetable(timetableRes.data);
-                setGrades(gradesRes.data);
-                setAttendance(attendanceRes.data);
+                const setters = [setInvoices, setAssignments, setTimetable, setGrades, setAttendance];
+                results.forEach((result, i) => {
+                    if (result.status === 'fulfilled') setters[i](result.value.data);
+                    else console.error('Error fetching student data:', result.reason);
+                });
             } catch (error) {
                 console.error('Error fetching student data:', error);
             } finally {

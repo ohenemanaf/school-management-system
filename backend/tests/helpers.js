@@ -26,8 +26,8 @@ const connection = {
     execute: async (sql, params = []) => respond(sql, params),
     query: async (sql, params = []) => respond(sql, params),
     beginTransaction: async () => {},
-    commit: async () => {},
-    rollback: async () => {},
+    commit: async () => { calls.push({ sql: 'COMMIT', params: [] }); },
+    rollback: async () => { calls.push({ sql: 'ROLLBACK', params: [] }); },
     release: () => {},
 };
 
