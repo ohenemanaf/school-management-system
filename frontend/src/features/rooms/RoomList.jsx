@@ -10,7 +10,7 @@ const RoomList = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({ name: '', capacity: 30 });
     const { user } = useAuth();
-    const isAdmin = user?.role === 'ADMIN';
+    const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(user?.role);
 
     useEffect(() => {
         fetchRooms();

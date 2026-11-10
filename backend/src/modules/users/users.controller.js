@@ -11,6 +11,10 @@ async function displayNameFor(user) {
     if (user.role === 'STUDENT') {
         const [rows] = await db.execute('SELECT first_name, last_name FROM students WHERE user_id = ?', [user.id]);
         if (rows.length > 0) return `${rows[0].first_name} ${rows[0].last_name}`;
+    } else if (user.role === 'LECTURER') {
+        const [rows] = await db.execute('SELECT first_name, last_name FROM lecturers WHERE user_id = ?', [user.id]);
+        const full = [rows[0]?.first_name, rows[0]?.last_name].filter(Boolean).join(' ');
+        if (full) return full;
     }
     return fallback;
 }

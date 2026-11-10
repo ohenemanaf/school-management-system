@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
+import { lecturerName } from '../../utils/people';
 import { useAuth } from '../../context/AuthContext';
 import { IconCalendarEvent, IconPlus, IconX, IconTrash, IconClock } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
@@ -261,7 +262,7 @@ const Timetable = () => {
                                         <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Lecturer</label>
                                         <select required className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none font-semibold text-slate-700 dark:text-slate-200" value={formData.lecturer_id} onChange={e => setFormData({...formData, lecturer_id: e.target.value})}>
                                             <option value="">Select Lecturer</option>
-                                            {lecturers.map(t => <option key={t.id} value={t.id}>{t.email.split('@')[0]} ({t.department})</option>)}
+                                            {lecturers.map(t => <option key={t.id} value={t.id}>{lecturerName(t)} ({t.department})</option>)}
                                         </select>
                                     </div>
                                 </div>

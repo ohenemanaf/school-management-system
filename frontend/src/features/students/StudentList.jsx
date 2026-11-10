@@ -31,7 +31,7 @@ const StudentList = () => {
     const fileInputRef = useRef(null);
 
     const { user } = useAuth();
-    const isAdmin = user?.role === 'ADMIN';
+    const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(user?.role);
 
     useEffect(() => {
         fetchStudents();

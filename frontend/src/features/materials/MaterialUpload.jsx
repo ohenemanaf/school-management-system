@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api, { fileUrl } from '../../utils/api';
+import { lecturerName } from '../../utils/people';
 import { useAuth } from '../../context/AuthContext';
 import { IconDownload } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
@@ -79,7 +80,7 @@ const MaterialUpload = () => {
                         </select>
                         <select required disabled={user?.role === 'LECTURER'} value={form.lecturerId} onChange={e => setForm({...form, lecturerId: e.target.value})} className={`px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200 ${user?.role === 'LECTURER' ? 'opacity-50 cursor-not-allowed' : ''}`}>
                             <option value="">Select Lecturer</option>
-                            {lecturersList.map(t => <option key={t.id} value={t.id}>{t.email.split('@')[0]} ({t.department})</option>)}
+                            {lecturersList.map(t => <option key={t.id} value={t.id}>{lecturerName(t)} ({t.department})</option>)}
                         </select>
                         <input type="text" placeholder="Material Title" required value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200" />
                         <input type="url" placeholder="File URL Link" required value={form.fileUrl} onChange={e => setForm({...form, fileUrl: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200" />

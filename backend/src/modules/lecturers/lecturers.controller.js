@@ -15,14 +15,16 @@ class LecturerController {
     static async create(req, res) {
         try {
             const { email, password, department, hireDate } = req.body;
-            if (typeof email !== 'string' || !email.includes('@') || !department) {
-                return res.status(400).json({ message: 'Email and department are required' });
+            const firstName = req.body.firstName?.trim();
+            const lastName = req.body.lastName?.trim();
+            if (typeof email !== 'string' || !email.includes('@') || !department || !firstName || !lastName) {
+                return res.status(400).json({ message: 'First name, last name, email and department are required' });
             }
             const passwordError = validatePassword(password);
             if (passwordError) return res.status(400).json({ message: passwordError });
             const passwordHash = await hashPassword(password);
 
-            const id = await LecturerModel.create({ email, passwordHash, department, hireDate });
+            const id = await LecturerModel.create({ email, passwordHash, firstName, lastName, department, hireDate });
             res.status(201).json({ message: 'Lecturer created successfully', id });
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
@@ -47,8 +49,10 @@ class LecturerController {
     static async update(req, res) {
         try {
             const { email, department, hireDate } = req.body;
+            const firstName = req.body.firstName?.trim() || null;
+            const lastName = req.body.lastName?.trim() || null;
             // Note: Not handling password updates here to keep it simple, passwords can be reset via a different flow
-            await LecturerModel.update(req.params.id, { email, department, hireDate });
+            await LecturerModel.update(req.params.id, { email, firstName, lastName, department, hireDate });
             res.json({ message: 'Lecturer updated successfully' });
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {

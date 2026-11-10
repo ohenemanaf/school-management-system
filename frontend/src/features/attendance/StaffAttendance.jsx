@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
+import { lecturerName } from '../../utils/people';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -7,7 +8,8 @@ const StaffAttendance = () => {
     const { user } = useAuth();
     const [attendance, setAttendance] = useState([]);
     const [loading, setLoading] = useState(true);
-    const isAdmin = user?.role === 'ADMIN';
+    // Headmasters only view the register; the page itself is limited to these roles.
+    const isAdmin = ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'].includes(user?.role);
 
     // Form state for clock in/out
     const [form, setForm] = useState({
@@ -105,7 +107,7 @@ const StaffAttendance = () => {
                                         <td className="px-6 py-4 font-semibold text-slate-700 dark:text-slate-200">{new Date(rec.date).toLocaleDateString()}</td>
                                         {isAdmin && (
                                             <td className="px-6 py-4">
-                                                <div className="font-semibold text-slate-800 dark:text-slate-100">{rec.email?.split('@')[0]}</div>
+                                                <div className="font-semibold text-slate-800 dark:text-slate-100">{lecturerName(rec)}</div>
                                                 <div className="text-xs text-slate-500 dark:text-slate-400">{rec.email}</div>
                                             </td>
                                         )}

@@ -10,7 +10,7 @@ const CourseList = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({ name: '', code: '' });
     const { user } = useAuth();
-    const isAdmin = user?.role === 'ADMIN';
+    const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(user?.role);
 
     useEffect(() => {
         fetchCourses();

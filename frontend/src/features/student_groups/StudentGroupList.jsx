@@ -11,7 +11,7 @@ const StudentGroupList = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({ name: '', level: '', program_id: '' });
     const { user } = useAuth();
-    const isAdmin = user?.role === 'ADMIN';
+    const isAdmin = ['SUPER_ADMIN', 'ADMIN'].includes(user?.role);
 
     useEffect(() => {
         fetchGroups();
