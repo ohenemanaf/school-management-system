@@ -11,6 +11,7 @@ import {
 import api from '../../utils/api';
 import { SCHOOL_NAME } from '../../utils/format';
 import ResultStatement from './ResultStatement';
+import AssessmentsBySubject from './AssessmentsBySubject';
 
 // A student's results for a term: progress analytics from every mark so far,
 // and the official report card (once the school releases the term), which
@@ -21,10 +22,6 @@ const DEFAULT_SCALE = [
     { minScore: 50, grade: 'D' }, { minScore: 0, grade: 'F' },
 ];
 const gradeFor = (pct, scale) => (scale.find((s) => pct >= s.minScore) || scale[scale.length - 1]).grade;
-const gradeTone = (pct) => (pct >= 80 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
-    : pct >= 60 ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300'
-        : pct >= 50 ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400'
-            : 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400');
 const shortLabel = (text, max = 14) => (text.length > max ? `${text.slice(0, max - 1)}…` : text);
 const axisTick = { fill: 'var(--viz-text-secondary)', fontSize: 12 };
 const tooltipStyle = { borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' };
@@ -112,13 +109,12 @@ const StudentResults = () => {
         const best = subjects.reduce((top, s) => (!top || s.average > top.average ? s : top), null);
         const average = processed.length ? processed.reduce((sum, g) => sum + g.percentage, 0) / processed.length : null;
         const trend = [...processed].sort((a, b) => a.date - b.date).map((g) => ({ name: g.assessment_name, score: Number(g.percentage.toFixed(1)), subject: g.subject }));
-        const recent = [...processed].sort((a, b) => b.date - a.date);
-        return { processed, subjects, best, average, trend, recent };
+        return { processed, subjects, best, average, trend };
     }, [grades, termId]);
 
     const selected = terms?.find((t) => String(t.id) === termId);
     const canPrint = cardState === 'ready' && statement;
-    const { processed, subjects, best, average, trend, recent } = analytics;
+    const { processed, subjects, best, average, trend } = analytics;
 
     if (terms === null) {
         return (
@@ -221,49 +217,8 @@ const StudentResults = () => {
                         </div>
                     </Card>
 
-                    <Card title="Recent assessments" accent="bg-blue-500" className="lg:col-span-2">
-                        {/* Phones: one row per assessment */}
-                        <ul className="md:hidden divide-y divide-slate-100 dark:divide-slate-700/60 -my-2">
-                            {recent.map((g) => (
-                                <li key={g.id} className="flex items-center justify-between gap-3 py-3">
-                                    <div className="min-w-0">
-                                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{g.assessment_name}</p>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{g.subject} · {g.date.toLocaleDateString()}</p>
-                                    </div>
-                                    <div className="text-right shrink-0">
-                                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 tabular-nums">{Number(g.score)} <span className="text-slate-400 text-xs font-normal">/ {Number(g.max_score)}</span></p>
-                                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${gradeTone(g.percentage)}`}>{gradeFor(g.percentage, scale)}</span>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                        {/* Tablets and up: table */}
-                        <div className="hidden md:block overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
-                                        <th className="px-6 py-4 rounded-tl-xl">Assessment</th>
-                                        <th className="px-6 py-4">Subject</th>
-                                        <th className="px-6 py-4">Type</th>
-                                        <th className="px-6 py-4">Date</th>
-                                        <th className="px-6 py-4 text-right">Score</th>
-                                        <th className="px-6 py-4 text-right rounded-tr-xl">Grade</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100/50 dark:divide-slate-700/50 text-sm font-medium text-slate-700 dark:text-slate-200">
-                                    {recent.map((g) => (
-                                        <tr key={g.id} className="hover:bg-blue-50/30 dark:hover:bg-slate-700/30 transition-colors">
-                                            <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-100">{g.assessment_name}</td>
-                                            <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{g.subject}</td>
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{g.component === 'EXAM' ? 'Exam' : 'Class work'}</td>
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400 whitespace-nowrap">{g.date.toLocaleDateString()}</td>
-                                            <td className="px-6 py-4 text-right font-semibold tabular-nums whitespace-nowrap">{Number(g.score)} <span className="text-slate-400 text-xs font-normal">/ {Number(g.max_score)}</span></td>
-                                            <td className="px-6 py-4 text-right"><span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${gradeTone(g.percentage)}`}>{gradeFor(g.percentage, scale)}</span></td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                    <Card title="All assessments by subject" accent="bg-blue-500" className="lg:col-span-2">
+                        <AssessmentsBySubject marks={processed} gradeFor={(pct) => gradeFor(pct, scale)} finals={new Map((statement?.rows || []).map((r) => [r.name, r]))} />
                     </Card>
                 </div>
             )}
