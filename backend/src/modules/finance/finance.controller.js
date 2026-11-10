@@ -2,6 +2,8 @@ const FinanceModel = require('./finance.model');
 const db = require('../../config/db');
 const { studentIdFor } = require('../../utils/currentProfile');
 
+const PAYMENT_METHODS = ['Cash', 'Bank Transfer', 'Mobile Money', 'Cheque'];
+
 class FinanceController {
     // === FEE TYPES ===
     static async getFeeTypes(req, res) {
@@ -108,7 +110,11 @@ class FinanceController {
                 return res.status(400).json({ message: 'Invoice ID and a positive Amount Paid are required' });
             }
             
-            const id = await FinanceModel.recordPayment(invoiceId, amountPaid, paymentMethod, referenceNumber, notes);
+            const method = paymentMethod || 'Cash';
+            if (!PAYMENT_METHODS.includes(method)) {
+                return res.status(400).json({ message: `Payment method must be one of: ${PAYMENT_METHODS.join(', ')}` });
+            }
+            const id = await FinanceModel.recordPayment(invoiceId, amountPaid, method, referenceNumber, notes);
             res.status(201).json({ message: 'Payment recorded successfully', id });
         } catch (error) {
             if (error.status === 404) return res.status(404).json({ message: error.message });

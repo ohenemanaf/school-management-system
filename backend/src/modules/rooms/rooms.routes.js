@@ -1,11 +1,14 @@
 const express = require('express');
-const router = express.Router();
+const { authenticateToken, requirePermission } = require('../../core/middlewares/auth.middleware');
 const RoomsController = require('./rooms.controller');
-const { authenticateToken, requireRole } = require('../../core/middlewares/auth.middleware');
 
-router.get('/', authenticateToken, RoomsController.getAll);
-router.post('/', authenticateToken, requireRole(['SUPER_ADMIN', 'ADMIN']), RoomsController.create);
-router.put('/:id', authenticateToken, requireRole(['SUPER_ADMIN', 'ADMIN']), RoomsController.update);
-router.delete('/:id', authenticateToken, requireRole(['SUPER_ADMIN', 'ADMIN']), RoomsController.delete);
+const router = express.Router();
+router.use(authenticateToken);
+
+// Names are needed for dropdowns across the app, so any signed-in user may list them.
+router.get('/', RoomsController.getAll);
+router.post('/', requirePermission('academics.manage'), RoomsController.create);
+router.put('/:id', requirePermission('academics.manage'), RoomsController.update);
+router.delete('/:id', requirePermission('academics.manage'), RoomsController.delete);
 
 module.exports = router;

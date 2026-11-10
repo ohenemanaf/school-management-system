@@ -1,6 +1,7 @@
 const NotificationsModel = require('./notifications.model');
 const emailService = require('../../utils/emailService');
 const db = require('../../config/db');
+const { can } = require('../../config/permissions');
 
 class NotificationsController {
     static async getMyNotifications(req, res) {
@@ -49,6 +50,10 @@ class NotificationsController {
             
             if (!title || !message || !audience) {
                 return res.status(400).json({ message: 'Title, message, and audience are required' });
+            }
+            // The accountant may only address students (e.g. fee reminders).
+            if (!can(req.user.role, 'broadcast.anyAudience') && audience !== 'STUDENT') {
+                return res.status(403).json({ message: 'You can only send announcements to students' });
             }
 
             let recipients = [];

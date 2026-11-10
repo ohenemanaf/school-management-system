@@ -1,11 +1,12 @@
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert');
 const request = require('supertest');
-const { app, onQuery, tokenFor, reset, calls } = require('./helpers');
+const { app, onQuery, tokenFor, reset, calls, teaches } = require('./helpers');
 
 beforeEach(reset);
 
 test('a whole class is saved with one attendance insert', async () => {
+    teaches(4);
     onQuery(/SELECT id FROM students WHERE student_group_id = \? AND id IN \(\?\)/, [[{ id: 1 }, { id: 2 }, { id: 3 }]]);
     const res = await request(app).post('/api/attendance/bulk').set('Authorization', tokenFor('LECTURER'))
         .send({
@@ -20,6 +21,7 @@ test('a whole class is saved with one attendance insert', async () => {
 });
 
 test('bulk attendance ignores students who are not in the group', async () => {
+    teaches(4);
     onQuery(/SELECT id FROM students WHERE student_group_id = \? AND id IN \(\?\)/, [[{ id: 1 }]]);
     const res = await request(app).post('/api/attendance/bulk').set('Authorization', tokenFor('LECTURER'))
         .send({ studentGroupId: 4, date: '2026-11-10', records: [{ studentId: 1, status: 'Present' }, { studentId: 99, status: 'Present' }] });
@@ -40,10 +42,13 @@ test('bulk attendance validates its input', async () => {
 });
 
 test('students can be filtered by group on the server', async () => {
-    onQuery(/FROM students s/, (sql, params) => [[{ sql, params }]]);
+    teaches(4);
     const res = await request(app).get('/api/students?student_group_id=4').set('Authorization', tokenFor('LECTURER'));
-    assert.match(res.body[0].sql, /WHERE s\.student_group_id = \?/);
-    assert.deepStrictEqual(res.body[0].params, ['4']);
+    assert.strictEqual(res.status, 200);
+    const query = calls.find(c => /FROM students s/.test(c.sql));
+    assert.match(query.sql, /WHERE s\.student_group_id = \?/);
+    // the requested group, then the lecturer's own-classes limit
+    assert.deepStrictEqual(query.params, ['4', 4]);
 });
 
 test('attendance history is capped and filterable', async () => {

@@ -1,26 +1,19 @@
 const express = require('express');
+const { authenticateToken, requirePermission } = require('../../core/middlewares/auth.middleware');
 const StudentController = require('./students.controller');
 const StudentBulkController = require('./students.bulk.controller');
-const { authenticateToken } = require('../../core/middlewares/auth.middleware');
-const { requireRole } = require('../../core/middlewares/auth.middleware');
-
-const router = express.Router();
-
-// All student routes require authentication
-router.use(authenticateToken);
-
 const uploadCsv = require('../../core/middlewares/csvUpload.middleware');
 const uploadDisk = require('../../core/middlewares/upload.middleware');
 
-// Admin and Lecturer can view all students
-router.get('/', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER', 'ACCOUNTANT']), StudentController.getAll);
+const router = express.Router();
+router.use(authenticateToken);
 
-// Only Admin can create, update, or delete students
-// Write routes (Restricted to Admins)
-router.post('/bulk-upload', requireRole(['SUPER_ADMIN', 'ADMIN']), uploadCsv.single('file'), StudentBulkController.uploadBulk);
-router.post('/', requireRole(['SUPER_ADMIN', 'ADMIN']), uploadDisk.single('profileImage'), StudentController.create);
-router.put('/:id', requireRole(['SUPER_ADMIN', 'ADMIN']), uploadDisk.single('profileImage'), StudentController.update);
-router.delete('/:id', requireRole(['SUPER_ADMIN', 'ADMIN']), StudentController.delete);
-router.get('/:id', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER']), StudentController.getOne);
+// Which fields each role sees, and a lecturer's own-classes scope, are applied in the controller.
+router.get('/', requirePermission('students.view'), StudentController.getAll);
+router.get('/:id', requirePermission('students.view'), StudentController.getOne);
+router.post('/bulk-upload', requirePermission('students.manage'), uploadCsv.single('file'), StudentBulkController.uploadBulk);
+router.post('/', requirePermission('students.manage'), uploadDisk.single('profileImage'), StudentController.create);
+router.put('/:id', requirePermission('students.manage'), uploadDisk.single('profileImage'), StudentController.update);
+router.delete('/:id', requirePermission('students.manage'), StudentController.delete);
 
 module.exports = router;

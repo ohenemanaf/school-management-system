@@ -1,8 +1,6 @@
 const express = require('express');
+const { authenticateToken, requirePermission } = require('../../core/middlewares/auth.middleware');
 const UserController = require('./users.controller');
-const { authenticateToken } = require('../../core/middlewares/auth.middleware');
-const { requireRole } = require('../../core/middlewares/auth.middleware');
-
 const { loginLimiter, registerLimiter } = require('../../core/middlewares/rateLimit.middleware');
 
 const router = express.Router();
@@ -10,14 +8,14 @@ const router = express.Router();
 router.post('/register', registerLimiter, UserController.register);
 router.post('/login', loginLimiter, UserController.login);
 
-// Protected routes
+// Any signed-in account
 router.get('/profile', authenticateToken, UserController.getProfile);
 router.put('/preferences', authenticateToken, UserController.updatePreferences);
 router.put('/security/password', authenticateToken, UserController.updatePassword);
 
-// Admin routes for User Management
-router.get('/', authenticateToken, requireRole(['SUPER_ADMIN', 'ADMIN']), UserController.getAll);
-router.put('/:id', authenticateToken, requireRole(['SUPER_ADMIN']), UserController.update);
-router.delete('/:id', authenticateToken, requireRole(['SUPER_ADMIN']), UserController.delete);
+// Accounts and roles belong to the super admin alone
+router.get('/', authenticateToken, requirePermission('users.manage'), UserController.getAll);
+router.put('/:id', authenticateToken, requirePermission('users.manage'), UserController.update);
+router.delete('/:id', authenticateToken, requirePermission('users.manage'), UserController.delete);
 
 module.exports = router;

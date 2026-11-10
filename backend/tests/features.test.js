@@ -1,7 +1,7 @@
 const { test, beforeEach } = require('node:test');
 const assert = require('node:assert');
 const request = require('supertest');
-const { app, onQuery, tokenFor, reset, calls } = require('./helpers');
+const { app, onQuery, tokenFor, reset, calls, teaches } = require('./helpers');
 const emailService = require('../src/utils/emailService');
 
 const sentEmails = [];
@@ -35,6 +35,7 @@ test('students without a group see no materials', async () => {
 });
 
 test('lecturers always upload materials as themselves', async () => {
+    teaches(1);
     onQuery(/SELECT id FROM lecturers WHERE user_id = \?/, [[{ id: 3 }]]);
     await request(app).post('/api/materials').set('Authorization', tokenFor('LECTURER'))
         .send({ studentGroupId: 1, lecturerId: 99, title: 'Notes', fileUrl: 'https://example.test/notes.pdf' });

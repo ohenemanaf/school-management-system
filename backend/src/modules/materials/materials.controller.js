@@ -1,6 +1,6 @@
 const MaterialsModel = require('./materials.model');
 const db = require('../../config/db');
-const { lecturerIdFor } = require('../../utils/currentProfile');
+const { lecturerIdFor, groupScopeFor, inScope } = require('../../utils/currentProfile');
 const { signFields } = require('../../utils/signedUploads');
 
 class MaterialsController {
@@ -14,7 +14,7 @@ class MaterialsController {
                 const groupId = student[0]?.student_group_id;
                 materials = groupId ? await MaterialsModel.findByGroup(groupId) : [];
             } else {
-                materials = await MaterialsModel.findAll();
+                materials = await MaterialsModel.findAll({ scope: await groupScopeFor(req.user) });
             }
 
             res.json(signFields(materials, 'file_url'));
@@ -32,6 +32,9 @@ class MaterialsController {
                 // Lecturers always publish as themselves.
                 lecturerId = await lecturerIdFor(req.user.id);
                 if (!lecturerId) return res.status(404).json({ message: 'Lecturer profile not found' });
+            }
+            if (studentGroupId && !inScope(await groupScopeFor(req.user), studentGroupId)) {
+                return res.status(403).json({ message: 'You can only share materials with the classes you teach' });
             }
             if (!studentGroupId || !lecturerId || !title || typeof fileUrl !== 'string' || !/^(https?:\/\/|\/uploads\/)/i.test(fileUrl)) {
                 return res.status(400).json({ message: 'Group, lecturer, title and an http(s) link are required' });

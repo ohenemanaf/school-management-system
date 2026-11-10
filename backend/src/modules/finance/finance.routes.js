@@ -1,28 +1,23 @@
 const express = require('express');
-const router = express.Router();
+const { authenticateToken, requirePermission } = require('../../core/middlewares/auth.middleware');
 const FinanceController = require('./finance.controller');
-const { authenticateToken, requireRole } = require('../../core/middlewares/auth.middleware');
 
+const router = express.Router();
 router.use(authenticateToken);
 
-// === DASHBOARD STATS ===
-router.get('/stats', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT']), FinanceController.getStats);
+// Totals only
+router.get('/stats', requirePermission('finance.summary'), FinanceController.getStats);
 
-// === FEE TYPES ===
-router.get('/fee-types', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT']), FinanceController.getFeeTypes);
-router.post('/fee-types', requireRole(['SUPER_ADMIN', 'ACCOUNTANT', 'ADMIN']), FinanceController.createFeeType);
-router.put('/fee-types/:id', requireRole(['SUPER_ADMIN', 'ACCOUNTANT', 'ADMIN']), FinanceController.updateFeeType);
+// Viewing records (admin can see who has paid, but cannot change anything)
+router.get('/fee-types', requirePermission('finance.records'), FinanceController.getFeeTypes);
+router.get('/defaulters', requirePermission('finance.records'), FinanceController.getDefaulters);
+router.get('/invoices', requirePermission('finance.records', 'finance.own'), FinanceController.getInvoices);
+router.get('/payments/:invoiceId', requirePermission('finance.records', 'finance.own'), FinanceController.getPayments);
 
-// === INVOICES ===
-// Students can view their own invoices, admins can view all
-router.get('/invoices', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT', 'STUDENT']), FinanceController.getInvoices);
-router.post('/invoices', requireRole(['SUPER_ADMIN', 'ACCOUNTANT', 'ADMIN']), FinanceController.createInvoice);
-
-// === DEFAULTERS ===
-router.get('/defaulters', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT']), FinanceController.getDefaulters);
-
-// === PAYMENTS ===
-router.get('/payments/:invoiceId', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'ACCOUNTANT', 'STUDENT']), FinanceController.getPayments);
-router.post('/payments', requireRole(['SUPER_ADMIN', 'ACCOUNTANT', 'ADMIN']), FinanceController.recordPayment);
+// Changing records: the accountant (and super admin)
+router.post('/fee-types', requirePermission('finance.manage'), FinanceController.createFeeType);
+router.put('/fee-types/:id', requirePermission('finance.manage'), FinanceController.updateFeeType);
+router.post('/invoices', requirePermission('finance.manage'), FinanceController.createInvoice);
+router.post('/payments', requirePermission('finance.manage'), FinanceController.recordPayment);
 
 module.exports = router;

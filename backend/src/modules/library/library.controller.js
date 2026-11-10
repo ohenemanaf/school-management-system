@@ -1,5 +1,6 @@
 const LibraryModel = require('./library.model');
 const { signFields } = require('../../utils/signedUploads');
+const { can } = require('../../config/permissions');
 
 class LibraryController {
     // === STATS ===
@@ -121,7 +122,7 @@ class LibraryController {
     static async getAllLoans(req, res) {
         try {
             // Only library managers see every loan; everyone else sees their own.
-            if (!['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LIBRARIAN'].includes(req.user.role)) {
+            if (!can(req.user.role, 'library.manage')) {
                 const loans = await LibraryModel.getLoansByUser(req.user.id);
                 return res.json(loans);
             }

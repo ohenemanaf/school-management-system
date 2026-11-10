@@ -59,6 +59,11 @@ function tokenFor(role, { id = 100, isActive = true, mustChangePassword = false,
     return `Bearer ${jwt.sign({ id, role, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' })}`;
 }
 
+/** Makes the signed-in lecturer the teacher of these student groups (via the timetable). */
+function teaches(...groupIds) {
+    onQuery(/FROM timetable_sessions ts\s+JOIN lecturers l/, [groupIds.map((id) => ({ student_group_id: id }))]);
+}
+
 function reset() {
     handlers.length = 0;
     calls.length = 0;
@@ -67,4 +72,4 @@ function reset() {
 
 const app = require('../src/app');
 
-module.exports = { app, onQuery, tokenFor, reset, calls, users };
+module.exports = { app, onQuery, tokenFor, reset, calls, users, teaches };

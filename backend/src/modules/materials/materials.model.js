@@ -1,7 +1,9 @@
 const db = require('../../config/db');
+const { scopeClause } = require('../../utils/currentProfile');
 
 class MaterialsModel {
-    static async findAll() {
+    static async findAll({ scope = null } = {}) {
+        const scoped = scopeClause('m.student_group_id', scope);
         const [rows] = await db.execute(`
             SELECT m.id, m.title, m.file_url, m.created_at,
                    sg.name as student_group_name,
@@ -10,8 +12,9 @@ class MaterialsModel {
             FROM materials m
             JOIN student_groups sg ON m.student_group_id = sg.id
             JOIN lecturers t ON m.lecturer_id = t.id
+            ${scoped.sql ? `WHERE ${scoped.sql}` : ''}
             ORDER BY m.created_at DESC
-        `);
+        `, scoped.params);
         return rows;
     }
 

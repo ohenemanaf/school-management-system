@@ -1,15 +1,22 @@
 const crypto = require('crypto');
 const db = require('../../config/db');
+const { scopeClause } = require('../../utils/currentProfile');
 
 class StudentModel {
 
-    static async findAll({ studentGroupId } = {}) {
+    static async findAll({ studentGroupId, scope = null } = {}) {
+        const conditions = [];
         const params = [];
-        let where = '';
         if (studentGroupId) {
-            where = 'WHERE s.student_group_id = ?';
+            conditions.push('s.student_group_id = ?');
             params.push(studentGroupId);
         }
+        const scoped = scopeClause('s.student_group_id', scope);
+        if (scoped.sql) {
+            conditions.push(scoped.sql);
+            params.push(...scoped.params);
+        }
+        const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
         const [rows] = await db.execute(`
             SELECT s.*, u.email, u.is_active, sg.name as student_group_name, sg.level 
             FROM students s

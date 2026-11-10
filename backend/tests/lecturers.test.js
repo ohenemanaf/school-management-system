@@ -30,6 +30,7 @@ test('editing a lecturer without names keeps the existing ones', async () => {
 });
 
 test('timetable rows carry the lecturer name', async () => {
+    onQuery(/SELECT student_group_id FROM students WHERE user_id = \?/, [[{ student_group_id: 4 }]]);
     onQuery(/FROM timetable_sessions t/, (sql) => [[{ sql }]]);
     const res = await request(app).get('/api/timetable').set('Authorization', tokenFor('STUDENT'));
     assert.match(res.body[0].sql, /AS lecturer_name/);

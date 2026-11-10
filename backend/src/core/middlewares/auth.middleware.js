@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const db = require('../../config/db');
 const { secret: jwtSecret } = require('../../config/jwt');
+const { can } = require('../../config/permissions');
 
 // Routes an account may still use while it is required to change its password.
 const PASSWORD_CHANGE_ROUTES = new Set([
@@ -63,4 +64,18 @@ const requireRole = (roles) => (req, res, next) => {
     next();
 };
 
-module.exports = { authenticateToken, requireRole };
+/**
+ * Allows the request when the user's role holds any of the named permissions
+ * (see config/permissions.json). Names are checked when the route is defined.
+ */
+const requirePermission = (...permissions) => {
+    permissions.forEach((permission) => can('SUPER_ADMIN', permission)); // throws on unknown names
+    return (req, res, next) => {
+        if (!req.user || !permissions.some((permission) => can(req.user.role, permission))) {
+            return res.status(403).json({ message: 'Access denied' });
+        }
+        next();
+    };
+};
+
+module.exports = { authenticateToken, requireRole, requirePermission };

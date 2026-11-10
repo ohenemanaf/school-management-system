@@ -91,7 +91,7 @@ class UserController {
 
             if (req.user.role === 'STUDENT') {
                 const [rows] = await db.execute(
-                    'SELECT id, profile_image_url, enrollment_number, gender, student_group_id FROM students WHERE user_id = ?',
+                    'SELECT id, profile_image_url, enrollment_number, gender, student_group_id, medical_conditions, blood_group FROM students WHERE user_id = ?',
                     [req.user.id]
                 );
                 if (rows.length > 0) {
@@ -100,6 +100,9 @@ class UserController {
                     profile.enrollmentNumber = rows[0].enrollment_number;
                     profile.gender = rows[0].gender;
                     profile.studentGroupId = rows[0].student_group_id;
+                    // A student may always see their own health details.
+                    profile.medicalConditions = rows[0].medical_conditions;
+                    profile.bloodGroup = rows[0].blood_group;
                 }
             } else if (req.user.role === 'LECTURER') {
                 const [rows] = await db.execute('SELECT id FROM lecturers WHERE user_id = ?', [req.user.id]);

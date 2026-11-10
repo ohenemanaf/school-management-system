@@ -1,10 +1,9 @@
 const express = require('express');
+const { authenticateToken, requirePermission } = require('../../core/middlewares/auth.middleware');
 const StatsController = require('./stats.controller');
-const { authenticateToken, requireRole } = require('../../core/middlewares/auth.middleware');
 
 const router = express.Router();
-
 router.use(authenticateToken);
-router.get('/', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN']), StatsController.getDashboardStats);
+router.get('/', requirePermission('dashboard.stats'), StatsController.getDashboardStats);
 
 module.exports = router;

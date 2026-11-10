@@ -1,11 +1,14 @@
 const express = require('express');
-const router = express.Router();
+const { authenticateToken, requirePermission } = require('../../core/middlewares/auth.middleware');
 const StudentGroupsController = require('./student_groups.controller');
-const { authenticateToken, requireRole } = require('../../core/middlewares/auth.middleware');
 
-router.get('/', authenticateToken, StudentGroupsController.getAll);
-router.post('/', authenticateToken, requireRole(['SUPER_ADMIN', 'ADMIN']), StudentGroupsController.create);
-router.put('/:id', authenticateToken, requireRole(['SUPER_ADMIN', 'ADMIN']), StudentGroupsController.update);
-router.delete('/:id', authenticateToken, requireRole(['SUPER_ADMIN', 'ADMIN']), StudentGroupsController.delete);
+const router = express.Router();
+router.use(authenticateToken);
+
+// Names are needed for dropdowns across the app, so any signed-in user may list them.
+router.get('/', StudentGroupsController.getAll);
+router.post('/', requirePermission('academics.manage'), StudentGroupsController.create);
+router.put('/:id', requirePermission('academics.manage'), StudentGroupsController.update);
+router.delete('/:id', requirePermission('academics.manage'), StudentGroupsController.delete);
 
 module.exports = router;

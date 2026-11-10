@@ -54,6 +54,9 @@ before(async () => {
     ids.lecturerUser = await user('lecturer@it.test', 'LECTURER');
     ids.studentUser = await user('student@it.test', 'STUDENT');
     await user('gate@it.test', 'GATEKEEPER');
+    await user('accountant@it.test', 'ACCOUNTANT');
+    await user('schooladmin@it.test', 'ADMIN');
+    await user('librarian@it.test', 'LIBRARIAN');
     ids.program = (await admin.query("INSERT INTO programs (name, code) VALUES ('Science', 'SCI')"))[0].insertId;
     ids.group = (await admin.query('INSERT INTO student_groups (name, level, program_id) VALUES (?, ?, ?)', ['Form 1A', '100', ids.program]))[0].insertId;
     ids.otherGroup = (await admin.query("INSERT INTO student_groups (name, level) VALUES ('Form 1B', '100')"))[0].insertId;
@@ -68,6 +71,10 @@ before(async () => {
     ids.room = (await admin.query("INSERT INTO rooms (name) VALUES ('Room 1')"))[0].insertId;
     ids.course = (await admin.query("INSERT INTO courses (name, code) VALUES ('Maths', 'M1')"))[0].insertId;
     ids.fee = (await admin.query("INSERT INTO fee_types (name, amount) VALUES ('Tuition', 500)"))[0].insertId;
+    // The lecturer teaches Form 1A, which is what scopes their classes.
+    await admin.query(
+        "INSERT INTO timetable_sessions (course_id, student_group_id, lecturer_id, room_id, day_of_week, start_time, end_time) VALUES (?, ?, ?, ?, 'Monday', '08:00', '09:00')",
+        [ids.course, ids.group, ids.lecturer, ids.room]);
 
     process.env.NODE_ENV = 'test';
     process.env.JWT_SECRET = 'integration-secret-'.padEnd(48, 'x');
@@ -78,7 +85,7 @@ before(async () => {
     app = require('../src/app');
     request = require('supertest');
 
-    for (const [key, email] of [['admin', 'admin@it.test'], ['lecturer', 'lecturer@it.test'], ['student', 'student@it.test'], ['gate', 'gate@it.test']]) {
+    for (const [key, email] of [['admin', 'admin@it.test'], ['lecturer', 'lecturer@it.test'], ['student', 'student@it.test'], ['gate', 'gate@it.test'], ['accountant', 'accountant@it.test'], ['librarian', 'librarian@it.test'], ['schooladmin', 'schooladmin@it.test']]) {
         const res = await request(app).post('/api/users/login').send({ email, password: PASSWORD });
         assert.strictEqual(res.status, 200, `login ${email}: ${JSON.stringify(res.body)}`);
         auth[key] = `Bearer ${res.body.token}`;
@@ -139,10 +146,13 @@ test('dashboard stats run as one valid query', { skip }, async () => {
 });
 
 test('finance: payments update status, stats and defaulters add up', { skip }, async () => {
-    const invoice = await as('admin').post('/api/finance/invoices', { studentId: ids.student, feeTypeId: ids.fee, amountDue: 500, dueDate: '2026-12-01' });
+    const invoice = await as('accountant').post('/api/finance/invoices', { studentId: ids.student, feeTypeId: ids.fee, amountDue: 500, dueDate: '2026-12-01' });
     ok(invoice, 201);
-    ok(await as('admin').post('/api/finance/payments', { invoiceId: invoice.body.id, amountPaid: 200, paymentMethod: 'Cash' }), 201);
-    assert.strictEqual((await as('admin').post('/api/finance/payments', { invoiceId: 999999, amountPaid: 5 })).status, 404);
+    ok(await as('accountant').post('/api/finance/payments', { invoiceId: invoice.body.id, amountPaid: 200, paymentMethod: 'Cash' }), 201);
+    assert.strictEqual((await as('accountant').post('/api/finance/payments', { invoiceId: 999999, amountPaid: 5 })).status, 404);
+    // Admin can see who has paid but cannot record anything.
+    assert.strictEqual((await as('schooladmin').post('/api/finance/payments', { invoiceId: invoice.body.id, amountPaid: 1 })).status, 403);
+    ok(await as('schooladmin').get('/api/finance/defaulters'));
 
     const [[row]] = await admin.query(`SELECT status FROM ${FRESH}.invoices WHERE id = ?`, [invoice.body.id]);
     assert.strictEqual(row.status, 'Partial');
@@ -188,7 +198,12 @@ test('notifications: role broadcast, global read receipts, read-all', { skip }, 
 
 test('grades: membership check, group filter and cap', { skip }, async () => {
     ok(await as('lecturer').post('/api/grades', { studentId: ids.student, studentGroupId: ids.group, assessmentName: 'Quiz', score: 8, maxScore: 10 }), 201);
-    assert.strictEqual((await as('lecturer').post('/api/grades', { studentId: ids.student, studentGroupId: ids.otherGroup, assessmentName: 'Quiz', score: 8, maxScore: 10 })).status, 400);
+    assert.strictEqual((await as('lecturer').post('/api/grades', { studentId: ids.student, studentGroupId: ids.otherGroup, assessmentName: 'Quiz', score: 8, maxScore: 10 })).status, 403);
+    const analytics = await as('admin').get('/api/grades/analytics');
+    ok(analytics);
+    assert.strictEqual(analytics.body.overall.grades, 1);
+    assert.strictEqual(analytics.body.byGroup[0].suppressed, true, 'one graded student is not broken down');
+    assert.strictEqual((await as('admin').get('/api/grades')).status, 403);
     const res = await as('lecturer').get(`/api/grades?student_group_id=${ids.group}&limit=5`);
     ok(res);
     assert.strictEqual(res.body.length, 1);
@@ -220,7 +235,7 @@ test('CSV import uses savepoints: a clash undoes only its own row', { skip }, as
 test('timetable rows carry lecturer names', { skip }, async () => {
     ok(await as('admin').post('/api/timetable', {
         course_id: ids.course, student_group_id: ids.group, lecturer_id: ids.lecturer, room_id: ids.room,
-        day_of_week: 'Monday', start_time: '08:00', end_time: '09:00',
+        day_of_week: 'Tuesday', start_time: '08:00', end_time: '09:00',
     }), 201);
     const res = await as('student').get(`/api/timetable?student_group_id=${ids.group}`);
     ok(res);
@@ -238,7 +253,8 @@ test('gate token check-in is single use', { skip }, async () => {
 
 test('library stats and partial book updates', { skip }, async () => {
     const [book] = await admin.query(`INSERT INTO ${FRESH}.books (title, author, total_copies, available_copies) VALUES ('Atlas', 'X', 3, 3)`);
-    ok(await as('admin').put(`/api/library/books/${book.insertId}`, { category: 'Geography' }));
+    assert.strictEqual((await as('schooladmin').put(`/api/library/books/${book.insertId}`, { category: 'Geography' })).status, 403);
+    ok(await as('librarian').put(`/api/library/books/${book.insertId}`, { category: 'Geography' }));
     const [[row]] = await admin.query(`SELECT title, category FROM ${FRESH}.books WHERE id = ?`, [book.insertId]);
     assert.deepStrictEqual({ ...row }, { title: 'Atlas', category: 'Geography' });
     const stats = await as('admin').get('/api/library/stats');

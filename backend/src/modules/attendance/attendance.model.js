@@ -1,4 +1,5 @@
 const db = require('../../config/db');
+const { scopeClause } = require('../../utils/currentProfile');
 
 const DEFAULT_LIMIT = 500;
 const MAX_LIMIT = 2000;
@@ -7,9 +8,11 @@ const clampLimit = (value) => Math.min(Math.max(parseInt(value, 10) || DEFAULT_L
 
 class AttendanceModel {
     /** Most recent records first, optionally filtered by group and date. Always capped. */
-    static async findAll({ studentGroupId, date, limit } = {}) {
+    static async findAll({ studentGroupId, date, limit, scope = null } = {}) {
         const where = [];
         const params = [];
+        const scoped = scopeClause('a.student_group_id', scope);
+        if (scoped.sql) { where.push(scoped.sql); params.push(...scoped.params); }
         if (studentGroupId) { where.push('a.student_group_id = ?'); params.push(studentGroupId); }
         if (date) { where.push('a.date = ?'); params.push(date); }
 

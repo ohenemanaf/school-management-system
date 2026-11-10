@@ -1,10 +1,13 @@
 const StudentGroupsModel = require('./student_groups.model');
+const { groupScopeFor } = require('../../utils/currentProfile');
 
 class StudentGroupsController {
     static async getAll(req, res) {
         try {
             const groups = await StudentGroupsModel.getAll();
-            res.json(groups);
+            // Lecturers only work with the classes they teach.
+            const scope = await groupScopeFor(req.user);
+            res.json(scope === null ? groups : groups.filter((group) => scope.includes(group.id)));
         } catch (error) {
             console.error('Error fetching student groups:', error);
             res.status(500).json({ message: 'Server error' });
