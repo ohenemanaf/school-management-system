@@ -2,7 +2,7 @@ const express = require('express');
 const StudentController = require('./students.controller');
 const StudentBulkController = require('./students.bulk.controller');
 const { authenticateToken } = require('../../core/middlewares/auth.middleware');
-const { requireRole } = require('../../core/middlewares/role.middleware');
+const { requireRole } = require('../../core/middlewares/auth.middleware');
 
 const router = express.Router();
 

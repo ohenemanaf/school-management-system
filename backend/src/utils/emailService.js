@@ -20,7 +20,7 @@ class EmailService {
                     }
                 });
                 console.log('Using real SMTP configuration');
-            } else if (process.env.NODE_ENV === 'production') {
+            } else if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'test') {
                 console.log('Email delivery is disabled until SMTP settings are configured.');
             } else {
                 // Use Ethereal for testing if no config is found
