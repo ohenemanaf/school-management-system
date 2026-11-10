@@ -10,5 +10,6 @@ router.get('/gate-token', requireRole(['SUPER_ADMIN', 'ADMIN', 'GATEKEEPER']), A
 router.post('/lecturer-checkin', requireRole(['LECTURER']), checkInLimiter, AttendanceController.lecturerCheckIn);
 router.get('/', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER', 'STUDENT']), AttendanceController.getAll);
 router.post('/', requireRole(['SUPER_ADMIN', 'ADMIN', 'LECTURER']), AttendanceController.mark);
+router.post('/bulk', requireRole(['SUPER_ADMIN', 'ADMIN', 'LECTURER']), AttendanceController.markBulk);
 
 module.exports = router;

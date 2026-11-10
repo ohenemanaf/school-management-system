@@ -111,7 +111,9 @@ CREATE TABLE IF NOT EXISTS attendance (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
     FOREIGN KEY (student_group_id) REFERENCES student_groups(id) ON DELETE CASCADE,
-    UNIQUE KEY student_group_date (student_id, student_group_id, date)
+    UNIQUE KEY student_group_date (student_id, student_group_id, date),
+    INDEX idx_attendance_group_date (student_group_id, date),
+    INDEX idx_attendance_date (date)
 );
 
 -- Create grades table
@@ -124,7 +126,8 @@ CREATE TABLE IF NOT EXISTS grades (
     max_score DECIMAL(5, 2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-    FOREIGN KEY (student_group_id) REFERENCES student_groups(id) ON DELETE CASCADE
+    FOREIGN KEY (student_group_id) REFERENCES student_groups(id) ON DELETE CASCADE,
+    INDEX idx_grades_created (created_at)
 );
 
 -- Create materials table
@@ -149,7 +152,8 @@ CREATE TABLE IF NOT EXISTS lecturer_attendance (
     check_out_time TIME,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (lecturer_id) REFERENCES lecturers(id) ON DELETE CASCADE,
-    UNIQUE KEY lecturer_date (lecturer_id, date)
+    UNIQUE KEY lecturer_date (lecturer_id, date),
+    INDEX idx_lecturer_attendance_date (date)
 );
 
 -- Create timetable_sessions table (The Event that ties them together)
@@ -178,7 +182,8 @@ CREATE TABLE IF NOT EXISTS gate_tokens (
     token VARCHAR(6) NOT NULL UNIQUE,
     is_used BOOLEAN DEFAULT FALSE,
     expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_gate_tokens_expires (expires_at)
 );
 
 -- Create notifications table
@@ -190,6 +195,17 @@ CREATE TABLE IF NOT EXISTS notifications (
     type ENUM('INFO', 'ALERT', 'SUCCESS', 'WARNING') DEFAULT 'INFO',
     is_read BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_notifications_user_created (user_id, created_at)
+);
+
+-- Per-user read receipts for school-wide (user_id IS NULL) notifications
+CREATE TABLE IF NOT EXISTS notification_reads (
+    notification_id INT NOT NULL,
+    user_id INT NOT NULL,
+    read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (notification_id, user_id),
+    FOREIGN KEY (notification_id) REFERENCES notifications(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -216,7 +232,8 @@ CREATE TABLE IF NOT EXISTS book_loans (
     status ENUM('Borrowed', 'Returned', 'Overdue') DEFAULT 'Borrowed',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_loans_status_due (status, due_date)
 );
 
 CREATE TABLE IF NOT EXISTS book_class_assignments (
@@ -248,7 +265,9 @@ CREATE TABLE IF NOT EXISTS invoices (
     status ENUM('Pending', 'Partial', 'Paid') DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-    FOREIGN KEY (fee_type_id) REFERENCES fee_types(id) ON DELETE RESTRICT
+    FOREIGN KEY (fee_type_id) REFERENCES fee_types(id) ON DELETE RESTRICT,
+    INDEX idx_invoices_status (status),
+    INDEX idx_invoices_created (created_at)
 );
 
 CREATE TABLE IF NOT EXISTS payments (

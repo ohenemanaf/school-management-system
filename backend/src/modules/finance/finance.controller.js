@@ -104,13 +104,14 @@ class FinanceController {
     static async recordPayment(req, res) {
         try {
             const { invoiceId, amountPaid, paymentMethod, referenceNumber, notes } = req.body;
-            if (!invoiceId || !amountPaid) {
-                return res.status(400).json({ message: 'Invoice ID and Amount Paid are required' });
+            if (!invoiceId || !(Number(amountPaid) > 0)) {
+                return res.status(400).json({ message: 'Invoice ID and a positive Amount Paid are required' });
             }
             
             const id = await FinanceModel.recordPayment(invoiceId, amountPaid, paymentMethod, referenceNumber, notes);
             res.status(201).json({ message: 'Payment recorded successfully', id });
         } catch (error) {
+            if (error.status === 404) return res.status(404).json({ message: error.message });
             console.error('Error recording payment:', error);
             res.status(500).json({ message: 'Server error' });
         }

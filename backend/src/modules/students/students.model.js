@@ -3,13 +3,21 @@ const db = require('../../config/db');
 
 class StudentModel {
 
-    static async findAll() {
+    static async findAll({ studentGroupId } = {}) {
+        const params = [];
+        let where = '';
+        if (studentGroupId) {
+            where = 'WHERE s.student_group_id = ?';
+            params.push(studentGroupId);
+        }
         const [rows] = await db.execute(`
             SELECT s.*, u.email, u.is_active, sg.name as student_group_name, sg.level 
             FROM students s
             JOIN users u ON s.user_id = u.id
             LEFT JOIN student_groups sg ON s.student_group_id = sg.id
-        `);
+            ${where}
+            ORDER BY s.last_name, s.first_name
+        `, params);
         return rows;
     }
 

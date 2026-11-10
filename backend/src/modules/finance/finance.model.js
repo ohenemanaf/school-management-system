@@ -60,17 +60,23 @@ class FinanceModel {
     }
 
     static async getDefaulters() {
+        // Totals are aggregated once per student instead of re-running a
+        // payments subquery twice for every student row.
         const [rows] = await db.execute(`
             SELECT s.id as student_id, s.first_name, s.last_name, s.enrollment_number,
                    sg.name as student_group_name,
-                   SUM(i.amount_due) as total_due,
-                   COALESCE((SELECT SUM(amount_paid) FROM payments p JOIN invoices inv ON p.invoice_id = inv.id WHERE inv.student_id = s.id), 0) as total_paid,
-                   (SUM(i.amount_due) - COALESCE((SELECT SUM(amount_paid) FROM payments p JOIN invoices inv ON p.invoice_id = inv.id WHERE inv.student_id = s.id), 0)) as balance
-            FROM students s
+                   d.total_due,
+                   COALESCE(p.total_paid, 0) as total_paid,
+                   d.total_due - COALESCE(p.total_paid, 0) as balance
+            FROM (SELECT student_id, SUM(amount_due) AS total_due FROM invoices GROUP BY student_id) d
+            JOIN students s ON s.id = d.student_id
             LEFT JOIN student_groups sg ON s.student_group_id = sg.id
-            JOIN invoices i ON s.id = i.student_id
-            GROUP BY s.id
-            HAVING balance > 0
+            LEFT JOIN (
+                SELECT i.student_id, SUM(pay.amount_paid) AS total_paid
+                FROM payments pay JOIN invoices i ON pay.invoice_id = i.id
+                GROUP BY i.student_id
+            ) p ON p.student_id = d.student_id
+            WHERE d.total_due - COALESCE(p.total_paid, 0) > 0
             ORDER BY balance DESC
         `);
         return rows;
@@ -92,6 +98,10 @@ class FinanceModel {
         const connection = await db.getConnection();
         try {
             await connection.beginTransaction();
+
+            // Lock the invoice so concurrent payments compute the status from the same total.
+            const [locked] = await connection.execute('SELECT id FROM invoices WHERE id = ? FOR UPDATE', [invoiceId]);
+            if (locked.length === 0) throw Object.assign(new Error('Invoice not found'), { status: 404 });
 
             const [result] = await connection.execute(
                 'INSERT INTO payments (invoice_id, amount_paid, payment_method, reference_number, notes) VALUES (?, ?, ?, ?, ?)',
@@ -126,31 +136,24 @@ class FinanceModel {
 
     // === DASHBOARD STATS ===
     static async getFinanceStats() {
-        // Total collected
-        const [paidRows] = await db.execute('SELECT SUM(amount_paid) as total FROM payments');
-        
-        // Total pending
-        const [dueRows] = await db.execute('SELECT SUM(amount_due) as total FROM invoices WHERE status != "Paid"');
-        const [partiallyPaidRows] = await db.execute(`
-            SELECT SUM(p.amount_paid) as total 
-            FROM payments p 
-            JOIN invoices i ON p.invoice_id = i.id 
-            WHERE i.status = "Partial"
+        // One round trip instead of five.
+        const [[row]] = await db.execute(`
+            SELECT
+                (SELECT COALESCE(SUM(amount_paid), 0) FROM payments) AS total_collected,
+                (SELECT COALESCE(SUM(amount_due), 0) FROM invoices WHERE status <> 'Paid') AS total_due,
+                (SELECT COALESCE(SUM(p.amount_paid), 0) FROM payments p
+                  JOIN invoices i ON p.invoice_id = i.id WHERE i.status = 'Partial') AS partially_paid,
+                (SELECT COUNT(*) FROM invoices) AS total_invoices,
+                (SELECT COUNT(*) FROM payments) AS total_payments
         `);
 
-        const totalCollected = parseFloat(paidRows[0].total || 0);
-        const totalDue = parseFloat(dueRows[0].total || 0);
-        const partiallyPaid = parseFloat(partiallyPaidRows[0].total || 0);
-        const pendingDues = totalDue - partiallyPaid; // Only the remaining amount of what's due
-
-        const [invoiceCount] = await db.execute('SELECT COUNT(*) as total FROM invoices');
-        const [paymentCount] = await db.execute('SELECT COUNT(*) as total FROM payments');
-
+        // Only the remaining amount of what's due
+        const pendingDues = parseFloat(row.total_due) - parseFloat(row.partially_paid);
         return {
-            totalCollected,
+            totalCollected: parseFloat(row.total_collected),
             pendingDues: pendingDues > 0 ? pendingDues : 0,
-            totalInvoices: invoiceCount[0].total,
-            totalPayments: paymentCount[0].total
+            totalInvoices: row.total_invoices,
+            totalPayments: row.total_payments
         };
     }
 }

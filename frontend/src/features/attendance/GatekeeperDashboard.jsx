@@ -9,7 +9,7 @@ const GatekeeperDashboard = () => {
     const [token, setToken] = useState('...');
     const [loading, setLoading] = useState(true);
 
-    const canAccess = user?.role === 'GATEKEEPER' || user?.role === 'ADMIN';
+    const canAccess = ['GATEKEEPER', 'ADMIN', 'SUPER_ADMIN'].includes(user?.role);
 
     const fetchToken = async () => {
         try {
@@ -26,7 +26,9 @@ const GatekeeperDashboard = () => {
         if (!canAccess) return;
         fetchToken();
         // Poll every 5 seconds to get a new token if the old one is consumed or expired
-        const interval = setInterval(fetchToken, 5000);
+        const interval = setInterval(() => {
+            if (document.visibilityState === 'visible') fetchToken();
+        }, 5000);
         return () => clearInterval(interval);
     }, [canAccess]);
 

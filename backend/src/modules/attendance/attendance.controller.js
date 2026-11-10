@@ -25,7 +25,11 @@ class AttendanceController {
                 if (!studentId) return res.status(404).json({ message: 'Student not found' });
                 attendance = await AttendanceModel.findByStudent(studentId);
             } else {
-                attendance = await AttendanceModel.findAll();
+                attendance = await AttendanceModel.findAll({
+                    studentGroupId: req.query.student_group_id,
+                    date: req.query.date,
+                    limit: req.query.limit,
+                });
             }
 
             res.json(attendance);
@@ -48,6 +52,26 @@ class AttendanceController {
                 return res.status(400).json({ message: 'Invalid Group ID or Student ID. Please ensure they exist.' });
             }
             console.error('Error marking attendance:', error);
+            res.status(500).json({ message: 'Server error' });
+        }
+    }
+
+    static async markBulk(req, res) {
+        try {
+            const { studentGroupId, date, records } = req.body;
+            if (!studentGroupId || typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+                return res.status(400).json({ message: 'studentGroupId and a date (YYYY-MM-DD) are required' });
+            }
+            if (!Array.isArray(records) || records.length === 0 || records.length > 1000) {
+                return res.status(400).json({ message: 'records must list between 1 and 1000 students' });
+            }
+            if (records.some((r) => !r || !Number.isInteger(Number(r.studentId)) || !STATUSES.includes(r.status))) {
+                return res.status(400).json({ message: `Each record needs a studentId and a status of ${STATUSES.join(', ')}` });
+            }
+            const result = await AttendanceModel.markBulk(studentGroupId, date, records);
+            res.json({ message: 'Attendance saved', ...result });
+        } catch (error) {
+            console.error('Error saving bulk attendance:', error);
             res.status(500).json({ message: 'Server error' });
         }
     }

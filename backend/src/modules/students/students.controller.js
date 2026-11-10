@@ -5,7 +5,7 @@ const { validatePassword, generateTemporaryPassword, hashPassword } = require('.
 class StudentController {
     static async getAll(req, res) {
         try {
-            const students = await StudentModel.findAll();
+            const students = await StudentModel.findAll({ studentGroupId: req.query.student_group_id });
             res.json(students);
         } catch (error) {
             console.error('Error fetching students:', error);

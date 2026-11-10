@@ -163,14 +163,17 @@ class LibraryModel {
 
     // === STATS ===
     static async getStats() {
-        const [booksCount] = await db.execute('SELECT COUNT(*) as total FROM books');
-        const [borrowedCount] = await db.execute("SELECT COUNT(*) as total FROM book_loans WHERE status = 'Borrowed'");
-        const [overdueCount] = await db.execute("SELECT COUNT(*) as total FROM book_loans WHERE status = 'Overdue' OR (status = 'Borrowed' AND due_date < CURDATE())");
-        
+        const [[row]] = await db.execute(`
+            SELECT
+                (SELECT COUNT(*) FROM books) AS total_books,
+                (SELECT COUNT(*) FROM book_loans WHERE status = 'Borrowed') AS borrowed_books,
+                (SELECT COUNT(*) FROM book_loans
+                  WHERE status = 'Overdue' OR (status = 'Borrowed' AND due_date < CURDATE())) AS overdue_books
+        `);
         return {
-            totalBooks: booksCount[0].total,
-            borrowedBooks: borrowedCount[0].total,
-            overdueBooks: overdueCount[0].total
+            totalBooks: row.total_books,
+            borrowedBooks: row.borrowed_books,
+            overdueBooks: row.overdue_books
         };
     }
 }

@@ -24,7 +24,9 @@ The frontend reads `VITE_API_URL`, defaulting to `/api`. Vite proxies local API 
 
 ## Checks
 
-Run `npm run lint` and `npm run build` in `frontend`. Lint currently includes existing non-blocking warnings. The backend does not currently have an automated regression test suite; `npm test` is an explicit failing placeholder. Backend source is checked for JavaScript syntax. The initial schema must be verified on a disposable database before a new deployment.
+Run `npm run lint` and `npm run build` in `frontend`. Lint currently includes existing non-blocking warnings.
+
+Run `npm test` in `backend`. The tests exercise the API (authentication, role access, validation, imports) against a scripted fake database, so they need no MySQL server; they do not prove the SQL itself, so the schema and queries must still be checked on a disposable database before a new deployment.
 
 ## Repository structure
 
@@ -36,8 +38,11 @@ Run `npm run lint` and `npm run build` in `frontend`. Lint currently includes ex
 
 ## Version control
 
-Commit application source, package manifests and the backend/frontend lockfiles. Environment secrets, dependencies, build output, editor settings and uploaded user files are ignored. Legacy migration scripts have been removed; existing databases require a separately reviewed upgrade plan. Obsolete bulk styling scripts and unused starter assets have been removed.
+Commit application source, package manifests and the backend/frontend lockfiles. Environment secrets, dependencies, build output, editor settings and uploaded user files are ignored. Legacy migration scripts have been removed. Databases created from an earlier `schema.sql` need the additive scripts in `backend/upgrades/` (run each once, in order, after a backup); new installations already include them. Obsolete bulk styling scripts and unused starter assets have been removed.
 
 ## Account security
+
+Accounts created by an administrator or a CSV import get a temporary password and must choose their own (12+ characters) before using anything else. Deactivating, deleting or changing the role of an account takes effect on its next request. Failed logins, registrations and gate check-ins are rate limited per address or lecturer. Set `ALLOW_PUBLIC_REGISTRATION=false` to remove self-service student sign-up.
+
 
 Public registration only creates student accounts. Administrators can view the system-user list; only super administrators can change roles, account status or delete accounts. Keep `.env` private. The initial bootstrap credentials and JWT secret must be configured before deployment.

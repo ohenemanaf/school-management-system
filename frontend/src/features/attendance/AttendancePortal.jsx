@@ -44,9 +44,8 @@ const AttendancePortal = () => {
     const fetchStudentsForClass = async () => {
         if (!form.studentGroupId) return;
         try {
-            const response = await api.get('/students'); 
-            const filtered = response.data.filter(s => s.student_group_id === parseInt(form.studentGroupId));
-            const defaultList = filtered.map(s => ({ ...s, status: 'Present' }));
+            const response = await api.get('/students', { params: { student_group_id: form.studentGroupId } });
+            const defaultList = response.data.map(s => ({ ...s, status: 'Present' }));
             setStudentsList(defaultList);
             toast.success(`Loaded ${defaultList.length} students`);
         } catch (error) {
@@ -66,20 +65,16 @@ const AttendancePortal = () => {
     const submitBulkAttendance = async () => {
         setIsSubmittingBulk(true);
         try {
-            let errorCount = 0;
-            await Promise.all(studentsList.map(s => 
-                api.post('/attendance', {
-                    studentId: s.id,
-                    studentGroupId: parseInt(form.studentGroupId),
-                    date: form.date,
-                    status: s.status
-                }).catch(e => { errorCount++; return null; })
-            ));
-            
-            if (errorCount > 0) {
-                toast.error(`Failed to save ${errorCount} records. Ensure the Group exists.`);
+            // One request for the whole register instead of one per student.
+            const { data } = await api.post('/attendance/bulk', {
+                studentGroupId: parseInt(form.studentGroupId),
+                date: form.date,
+                records: studentsList.map(s => ({ studentId: s.id, status: s.status }))
+            });
+            if (data.skipped?.length) {
+                toast.error(`${data.skipped.length} student(s) are no longer in this group and were skipped.`);
             } else {
-                toast.success('Bulk attendance saved successfully!');
+                toast.success(`Attendance saved for ${data.saved} students.`);
             }
             setStudentsList([]);
             fetchAttendance();
