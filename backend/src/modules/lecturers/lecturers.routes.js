@@ -5,11 +5,10 @@ const { authenticateToken, requireRole } = require('../../core/middlewares/auth.
 const router = express.Router();
 
 const LecturerBulkController = require('./lecturers.bulk.controller');
-const multer = require('multer');
-const uploadMemory = multer({ storage: multer.memoryStorage() });
+const uploadCsv = require('../../core/middlewares/csvUpload.middleware');
 
 router.use(authenticateToken);
-router.post('/bulk-upload', requireRole(['SUPER_ADMIN', 'ADMIN']), uploadMemory.single('file'), LecturerBulkController.uploadBulk);
+router.post('/bulk-upload', requireRole(['SUPER_ADMIN', 'ADMIN']), uploadCsv.single('file'), LecturerBulkController.uploadBulk);
 router.get('/', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN']), LecturerController.getAll);
 router.post('/', requireRole(['SUPER_ADMIN', 'ADMIN']), LecturerController.create);
 router.put('/:id', requireRole(['SUPER_ADMIN', 'ADMIN']), LecturerController.update);

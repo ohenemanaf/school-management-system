@@ -45,6 +45,9 @@ class AttendanceModel {
     }
 
     static async createToken(tokenStr) {
+        // Old tokens are never needed again; clearing them keeps the table small
+        // and frees codes for reuse under the UNIQUE constraint.
+        await db.execute('DELETE FROM gate_tokens WHERE expires_at < NOW() - INTERVAL 1 DAY');
         // 5 minute expiry
         await db.execute(`
             INSERT INTO gate_tokens (token, expires_at)
@@ -53,18 +56,13 @@ class AttendanceModel {
         return tokenStr;
     }
 
-    static async validateAndConsumeToken(tokenStr) {
-        // Find if valid and unused
-        const [rows] = await db.execute(`
-            SELECT id FROM gate_tokens
-            WHERE token = ? AND is_used = FALSE AND expires_at > NOW()
-        `, [tokenStr]);
-        
-        if (rows.length === 0) return false;
-
-        // Consume it
-        await db.execute('UPDATE gate_tokens SET is_used = TRUE WHERE id = ?', [rows[0].id]);
-        return true;
+    /** Marks the token used if it is valid. A single statement, so two lecturers cannot share one token. */
+    static async consumeToken(tokenStr) {
+        const [result] = await db.execute(
+            'UPDATE gate_tokens SET is_used = TRUE WHERE token = ? AND is_used = FALSE AND expires_at > NOW()',
+            [tokenStr]
+        );
+        return result.affectedRows === 1;
     }
 }
 module.exports = AttendanceModel;

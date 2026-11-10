@@ -1,4 +1,17 @@
+const crypto = require('crypto');
 const AttendanceModel = require('./attendance.model');
+const LecturerAttendanceModel = require('../lecturer_attendance/lecturer_attendance.model');
+const { lecturerIdFor } = require('../../utils/currentProfile');
+const { localDate, localTime } = require('../../utils/dates');
+
+const TOKEN_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O or 1/I
+const TOKEN_LENGTH = 6;
+
+function randomToken() {
+    let token = '';
+    for (let i = 0; i < TOKEN_LENGTH; i++) token += TOKEN_ALPHABET[crypto.randomInt(TOKEN_ALPHABET.length)];
+    return token;
+}
 
 class AttendanceController {
     static async getAll(req, res) {
@@ -39,15 +52,14 @@ class AttendanceController {
     static async generateGateToken(req, res) {
         try {
             let token = await AttendanceModel.getValidToken();
-            if (!token) {
-                // Generate a new 5-char alphanumeric token
-                const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // removed ambiguous chars
-                token = '';
-                for (let i = 0; i < 5; i++) {
-                    token += chars.charAt(Math.floor(Math.random() * chars.length));
+            for (let attempt = 0; !token && attempt < 5; attempt++) {
+                try {
+                    token = await AttendanceModel.createToken(randomToken());
+                } catch (error) {
+                    if (error.code !== 'ER_DUP_ENTRY') throw error; // collision: try another
                 }
-                await AttendanceModel.createToken(token);
             }
+            if (!token) throw new Error('Could not generate a unique gate token');
             res.json({ token });
         } catch (error) {
             console.error('Error generating gate token:', error);
@@ -58,26 +70,18 @@ class AttendanceController {
     static async lecturerCheckIn(req, res) {
         try {
             const { token } = req.body;
-            if (!token) return res.status(400).json({ message: 'Token is required' });
+            if (typeof token !== 'string' || !token.trim()) return res.status(400).json({ message: 'Token is required' });
 
-            const isValid = await AttendanceModel.validateAndConsumeToken(token.toUpperCase());
-            if (!isValid) {
+            // Resolve the profile first so a misconfigured account does not burn the token.
+            const lecturerId = await lecturerIdFor(req.user.id);
+            if (!lecturerId) return res.status(404).json({ message: 'Lecturer profile not found' });
+
+            const consumed = await AttendanceModel.consumeToken(token.trim().toUpperCase());
+            if (!consumed) {
                 return res.status(400).json({ message: 'Invalid, used, or expired token' });
             }
 
-            // Mark lecturer present
-            const { id } = req.user; // this is the user ID, we need lecturer_id
-            const db = require('../../config/db');
-            const [lecturer] = await db.execute('SELECT id FROM lecturers WHERE user_id = ?', [id]);
-            
-            if (lecturer.length === 0) return res.status(404).json({ message: 'Lecturer profile not found' });
-            const lecturerId = lecturer[0].id;
-            const today = new Date().toISOString().split('T')[0];
-
-            const LecturerAttendanceModel = require('../lecturer_attendance/lecturer_attendance.model');
-            const now = new Date().toLocaleTimeString('en-GB'); // HH:mm:ss format
-            
-            await LecturerAttendanceModel.markAttendance(lecturerId, today, 'Present', now, null);
+            await LecturerAttendanceModel.markAttendance(lecturerId, localDate(), 'Present', localTime(), null);
             
             res.json({ message: 'Check-in successful' });
         } catch (error) {

@@ -9,8 +9,7 @@ const router = express.Router();
 // All student routes require authentication
 router.use(authenticateToken);
 
-const multer = require('multer');
-const uploadMemory = multer({ storage: multer.memoryStorage() });
+const uploadCsv = require('../../core/middlewares/csvUpload.middleware');
 const uploadDisk = require('../../core/middlewares/upload.middleware');
 
 // Admin and Lecturer can view all students
@@ -18,7 +17,7 @@ router.get('/', requireRole(['SUPER_ADMIN', 'HEADMASTER', 'ADMIN', 'LECTURER', '
 
 // Only Admin can create, update, or delete students
 // Write routes (Restricted to Admins)
-router.post('/bulk-upload', requireRole(['SUPER_ADMIN', 'ADMIN']), uploadMemory.single('file'), StudentBulkController.uploadBulk);
+router.post('/bulk-upload', requireRole(['SUPER_ADMIN', 'ADMIN']), uploadCsv.single('file'), StudentBulkController.uploadBulk);
 router.post('/', requireRole(['SUPER_ADMIN', 'ADMIN']), uploadDisk.single('profileImage'), StudentController.create);
 router.put('/:id', requireRole(['SUPER_ADMIN', 'ADMIN']), uploadDisk.single('profileImage'), StudentController.update);
 router.delete('/:id', requireRole(['SUPER_ADMIN', 'ADMIN']), StudentController.delete);

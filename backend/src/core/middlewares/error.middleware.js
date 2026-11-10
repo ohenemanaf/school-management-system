@@ -1,36 +1,31 @@
+const multer = require('multer');
+
+// eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
-    console.error('Unhandled Exception:', err);
-
-    // Default error structure
-    let statusCode = 500;
-    let message = 'An unexpected server error occurred';
-
-    // Handle MySQL specific errors
-    if (err.code) {
-        switch (err.code) {
-            case 'ER_DUP_ENTRY':
-                statusCode = 409;
-                message = 'Duplicate entry found. This record already exists.';
-                break;
-            case 'ER_NO_REFERENCED_ROW_2':
-                statusCode = 400;
-                message = 'Invalid reference. The related record does not exist.';
-                break;
-            case 'ER_BAD_NULL_ERROR':
-                statusCode = 400;
-                message = 'Missing required fields.';
-                break;
-            default:
-                if (err.code.startsWith('ER_')) {
-                    statusCode = 500;
-                    message = `Database Error: ${err.sqlMessage || 'Internal configuration error'}`;
-                }
-        }
+    if (err instanceof multer.MulterError) {
+        const message = err.code === 'LIMIT_FILE_SIZE' ? 'File is too large.' : 'Invalid file upload.';
+        return res.status(400).json({ message });
+    }
+    if (err.status && err.status >= 400 && err.status < 500) {
+        return res.status(err.status).json({ message: err.message });
+    }
+    if (err.type === 'entity.parse.failed') {
+        return res.status(400).json({ message: 'Malformed JSON body.' });
     }
 
-    res.status(statusCode).json({
-        message,
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    const known = {
+        ER_DUP_ENTRY: [409, 'Duplicate entry found. This record already exists.'],
+        ER_NO_REFERENCED_ROW_2: [400, 'Invalid reference. The related record does not exist.'],
+        ER_ROW_IS_REFERENCED_2: [409, 'This record is still in use and cannot be deleted.'],
+        ER_BAD_NULL_ERROR: [400, 'Missing required fields.'],
+    }[err.code];
+    if (known) return res.status(known[0]).json({ message: known[1] });
+
+    // Unknown failures: log the detail, never send SQL or stack details to clients.
+    console.error('Unhandled Exception:', err);
+    res.status(500).json({
+        message: 'An unexpected server error occurred',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined,
     });
 };
 

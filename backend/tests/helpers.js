@@ -11,12 +11,12 @@ const users = new Map();
 
 function respond(sql, params) {
     calls.push({ sql, params });
+    for (const { pattern, reply } of handlers) {
+        if (pattern.test(sql)) return typeof reply === 'function' ? reply(sql, params) : reply;
+    }
     if (/FROM users u\s+JOIN roles r ON u\.role_id = r\.id\s+WHERE u\.id = \?/i.test(sql)) {
         const user = users.get(Number(params[0]));
         return [user ? [user] : []];
-    }
-    for (const { pattern, reply } of handlers) {
-        if (pattern.test(sql)) return typeof reply === 'function' ? reply(sql, params) : reply;
     }
     if (/^\s*(INSERT|UPDATE|DELETE)/i.test(sql)) return [{ affectedRows: 1, insertId: 1 }];
     return [[]];

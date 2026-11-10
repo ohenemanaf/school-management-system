@@ -3,10 +3,12 @@ const UserController = require('./users.controller');
 const { authenticateToken } = require('../../core/middlewares/auth.middleware');
 const { requireRole } = require('../../core/middlewares/auth.middleware');
 
+const { loginLimiter, registerLimiter } = require('../../core/middlewares/rateLimit.middleware');
+
 const router = express.Router();
 
-router.post('/register', UserController.register);
-router.post('/login', UserController.login);
+router.post('/register', registerLimiter, UserController.register);
+router.post('/login', loginLimiter, UserController.login);
 
 // Protected routes
 router.get('/profile', authenticateToken, UserController.getProfile);
