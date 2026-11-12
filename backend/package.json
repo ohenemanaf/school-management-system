@@ -10,7 +10,8 @@
     "seed": "node seed.js",
     "test:mysql": "node --test --test-concurrency=1 \"tests-mysql/**/*.test.js\"",
     "seed:scheduler-demo": "node scripts/seed-scheduler-demo.js",
-    "seed:results-demo": "node scripts/seed-results-demo.js"
+    "seed:results-demo": "node scripts/seed-results-demo.js",
+    "seed:realistic": "node scripts/seed-realistic.js"
   },
   "keywords": [],
   "author": "",
