@@ -3,6 +3,9 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { IconChartBar, IconInfoCircle } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
+import { can } from '../../config/permissions';
+import ResultsRelease from './ResultsRelease';
 
 // School-wide results for leaders (super admin, admin, headmaster).
 // Only aggregates: individual grades stay with each class's lecturer.
@@ -51,6 +54,7 @@ const BandTooltip = ({ active, payload }) => {
 };
 
 const Performance = () => {
+    const { user } = useAuth();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -78,6 +82,8 @@ const Performance = () => {
                     School-wide results. Individual grades stay with each class&apos;s lecturer.
                 </p>
             </div>
+
+            {can(user, 'results.release') && <ResultsRelease />}
 
             {overall.grades === 0 ? (
                 <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200 dark:border-slate-700/60 text-center text-slate-500 dark:text-slate-400">

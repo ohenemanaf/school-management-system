@@ -146,6 +146,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Printing: only the copy rendered for print (outside the app layout) is printed. */
+.print-only { display: none; }
+@media print {
+  @page { size: A4; margin: 10mm; }
+  #root { display: none !important; }
+  .print-only { display: block !important; zoom: 0.85; } /* fits the report card on one A4 page */
+  html, body { background: #fff !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .statement tr, .break-inside-avoid { break-inside: avoid; }
+}
+
 /* Chart tokens: one validated series hue per theme, plus recessive grid and labels. */
 :root {
   --viz-series-1: #2a78d6;
@@ -177,6 +188,9 @@
 .app-shell :is(p, h1, h2, h3, td) { overflow-wrap: anywhere; }
 .app-shell :is(th, td) { font-size: 0.875rem; line-height: 1.5; }
 .app-shell th { font-weight: 600; }
+/* The report card is a document: keep its own type sizes, and the same look in light and dark mode. */
+.app-shell .statement :is(th, td) { font-size: inherit; line-height: inherit; }
+.dark .statement :is(th, td) { background-color: transparent; color: inherit; border-color: #e2e8f0; }
 .app-shell td { font-weight: 400; }
 .app-shell .catalog-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: 1rem;

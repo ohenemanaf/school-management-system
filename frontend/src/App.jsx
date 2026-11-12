@@ -7,6 +7,7 @@ import AdminLayout from './layouts/AdminLayout';
 import Login from './features/auth/Login';
 import ForcePasswordChange from './features/auth/ForcePasswordChange';
 import { can } from './config/permissions';
+import TourProvider from './features/tour/TourProvider';
 
 // Pages load on demand so the first screen does not download every feature (charts, finance, library...).
 const Dashboard = lazy(() => import('./features/dashboard/Dashboard'));
@@ -52,6 +53,7 @@ function App() {
       <ThemeProvider>
         <Router>
           <Toaster position="top-right" />
+          <TourProvider>
           <Suspense fallback={null}>
           <Routes>
             <Route path="/" element={<Navigate to="/admin" replace />} />
@@ -92,6 +94,7 @@ function App() {
             </Route>
           </Routes>
           </Suspense>
+          </TourProvider>
         </Router>
       </ThemeProvider>
     </AuthProvider>

@@ -185,12 +185,21 @@ class UserController {
             if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
                 return res.status(400).json({ message: 'Preferences must be an object' });
             }
-            const preferencesString = JSON.stringify(req.body);
+            // Merge with what is stored, so one screen saving its settings (e.g. the
+            // theme) never wipes another's (e.g. guided-tour progress).
+            const [rows] = await db.execute('SELECT preferences FROM users WHERE id = ?', [req.user.id]);
+            let current = {};
+            try {
+                const stored = rows[0]?.preferences;
+                current = (typeof stored === 'string' ? JSON.parse(stored) : stored) || {};
+            } catch { current = {}; }
+            const merged = { ...current, ...req.body };
+            const preferencesString = JSON.stringify(merged);
             if (preferencesString.length > 10000) {
                 return res.status(400).json({ message: 'Preferences are too large' });
             }
             await db.execute('UPDATE users SET preferences = ? WHERE id = ?', [preferencesString, req.user.id]);
-            res.json({ message: 'Preferences updated successfully', preferences: req.body });
+            res.json({ message: 'Preferences updated successfully', preferences: merged });
         } catch (error) {
             console.error('Error updating preferences:', error);
             res.status(500).json({ message: 'Failed to update preferences' });

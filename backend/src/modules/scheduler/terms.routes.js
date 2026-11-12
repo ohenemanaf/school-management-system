@@ -14,5 +14,6 @@ router.put('/:id', requirePermission('terms.manage'), TermsController.update);
 router.post('/:id/current', requirePermission('terms.manage'), TermsController.makeCurrent);
 router.delete('/:id', requirePermission('terms.manage'), TermsController.remove);
 router.post('/:id/exams', requirePermission('terms.manage'), TermsController.addExam);
+router.post('/:id/results', requirePermission('results.release'), TermsController.setResults);
 
 module.exports = router;

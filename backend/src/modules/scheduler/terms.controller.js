@@ -12,13 +12,13 @@ function parseAlertDays(value) {
 }
 
 async function termsWithExams(where = '', params = []) {
-    const [terms] = await db.execute(`SELECT id, name, start_date, end_date, is_current FROM terms ${where} ORDER BY start_date DESC`, params);
+    const [terms] = await db.execute(`SELECT id, name, start_date, end_date, is_current, ca_weight, results_released FROM terms ${where} ORDER BY start_date DESC`, params);
     if (!terms.length) return [];
     const [exams] = await db.query(
         'SELECT id, term_id, name, start_date, end_date, alert_days, audience FROM exam_periods WHERE term_id IN (?) ORDER BY start_date',
         [terms.map((t) => t.id)]
     );
-    return terms.map((t) => ({ ...t, is_current: Boolean(t.is_current), exams: exams.filter((e) => e.term_id === t.id) }));
+    return terms.map((t) => ({ ...t, is_current: Boolean(t.is_current), results_released: Boolean(t.results_released), exams: exams.filter((e) => e.term_id === t.id) }));
 }
 
 const TermsController = {
@@ -121,6 +121,21 @@ const TermsController = {
         );
         if (!result.affectedRows) return res.status(404).json({ message: 'Exam period not found' });
         res.json({ message: 'Exam period updated' });
+    }),
+
+    /** Release (or withdraw) a term's results to students, and set the class-work weighting. */
+    setResults: handle(async (req, res) => {
+        const released = Boolean(req.body.released);
+        const weight = req.body.caWeight === undefined ? null : Number(req.body.caWeight);
+        if (weight !== null && (!Number.isInteger(weight) || weight < 0 || weight > 100)) {
+            return res.status(400).json({ message: 'Class-work weighting must be a whole number from 0 to 100.' });
+        }
+        const [result] = await db.execute(
+            'UPDATE terms SET results_released = ?, ca_weight = COALESCE(?, ca_weight) WHERE id = ?',
+            [released ? 1 : 0, weight, req.params.id]
+        );
+        if (!result.affectedRows) return res.status(404).json({ message: 'Term not found' });
+        res.json({ message: released ? 'Results released to students' : 'Results withdrawn from students' });
     }),
 
     removeExam: handle(async (req, res) => {

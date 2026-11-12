@@ -78,7 +78,7 @@ test('only lecturers enter grades', async () => {
 
 test("a lecturer cannot grade a class they don't teach", async () => {
     teaches(4);
-    const res = await as('LECTURER').post('/api/grades', { studentId: 1, studentGroupId: 9, assessmentName: 'Quiz', score: 5, maxScore: 10 });
+    const res = await as('LECTURER').post('/api/grades', { studentId: 1, studentGroupId: 9, assessmentName: 'Quiz', score: 5, maxScore: 10, courseId: 1, component: 'CLASS' });
     assert.strictEqual(res.status, 403);
 });
 

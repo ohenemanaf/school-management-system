@@ -20,12 +20,15 @@ class GradesModel {
         if (scoped.sql) { conditions.push(scoped.sql); params.push(...scoped.params); }
         const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
         const [rows] = await db.execute(`
-            SELECT g.id, g.assessment_name, g.score, g.max_score, g.created_at,
+            SELECT g.id, g.assessment_name, g.score, g.max_score, g.created_at, g.component,
+                   c.name AS course_name, t.name AS term_name,
                    s.first_name, s.last_name, s.enrollment_number,
                    sg.name as student_group_name
             FROM grades g
             JOIN students s ON g.student_id = s.id
             JOIN student_groups sg ON g.student_group_id = sg.id
+            LEFT JOIN courses c ON c.id = g.course_id
+            LEFT JOIN terms t ON t.id = g.term_id
             ${where}
             ORDER BY g.created_at DESC, g.id DESC
             LIMIT ${safeLimit}`, params);
@@ -34,9 +37,12 @@ class GradesModel {
 
     static async findByStudent(studentId) {
         const [rows] = await db.execute(`
-            SELECT g.id, g.assessment_name, g.score, g.max_score, g.created_at, sg.name as student_group_name
+            SELECT g.id, g.assessment_name, g.score, g.max_score, g.created_at, g.component, g.term_id,
+                   c.name AS course_name, c.code AS course_code, t.name AS term_name, sg.name as student_group_name
             FROM grades g
             JOIN student_groups sg ON g.student_group_id = sg.id
+            LEFT JOIN courses c ON c.id = g.course_id
+            LEFT JOIN terms t ON t.id = g.term_id
             WHERE g.student_id = ?
             ORDER BY g.created_at DESC
         `, [studentId]);
@@ -104,11 +110,11 @@ class GradesModel {
     }
 
     static async create(gradeData) {
-        const { studentId, studentGroupId, assessmentName, score, maxScore } = gradeData;
+        const { studentId, studentGroupId, assessmentName, score, maxScore, courseId, termId, component } = gradeData;
         const [result] = await db.execute(`
-            INSERT INTO grades (student_id, student_group_id, assessment_name, score, max_score) 
-            VALUES (?, ?, ?, ?, ?)
-        `, [studentId, studentGroupId, assessmentName, score, maxScore]);
+            INSERT INTO grades (student_id, student_group_id, assessment_name, score, max_score, course_id, term_id, component)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [studentId, studentGroupId, assessmentName, score, maxScore, courseId, termId, component]);
         return result.insertId;
     }
 }

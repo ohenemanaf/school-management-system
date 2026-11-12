@@ -8,7 +8,8 @@ const Gradebook = () => {
     const [grades, setGrades] = useState([]);
     const [loading, setLoading] = useState(true);
     
-    const [form, setForm] = useState({ studentId: '', studentGroupId: '', assessmentName: '', score: '', maxScore: '' });
+    const [form, setForm] = useState({ studentId: '', studentGroupId: '', courseId: '', component: 'CLASS', assessmentName: '', score: '', maxScore: '' });
+    const [options, setOptions] = useState({ term: null, subjects: [] });
     const [studentGroupsList, setStudentGroupsList] = useState([]);
     const [studentsList, setStudentsList] = useState([]);
 
@@ -20,7 +21,23 @@ const Gradebook = () => {
     useEffect(() => {
         fetchGrades(form.studentGroupId);
         fetchStudents(form.studentGroupId);
+        fetchOptions(form.studentGroupId);
     }, [form.studentGroupId]);
+
+    // The subjects this lecturer teaches the chosen class, and the term grades are filed under.
+    const fetchOptions = async (groupId) => {
+        if (!groupId) {
+            setOptions({ term: null, subjects: [] });
+            return;
+        }
+        try {
+            const { data } = await api.get('/grades/options', { params: { student_group_id: groupId } });
+            setOptions(data);
+            setForm((prev) => ({ ...prev, courseId: data.subjects.length === 1 ? String(data.subjects[0].id) : '' }));
+        } catch {
+            setOptions({ term: null, subjects: [] });
+        }
+    };
 
     const fetchStudentGroups = async () => {
         try {
@@ -62,7 +79,7 @@ const Gradebook = () => {
             toast.success('Grade saved');
             fetchGrades(form.studentGroupId);
             // Keep the group selected so the next grade is quick to enter.
-            setForm(prev => ({ ...prev, studentId: '', score: '' }));
+            setForm(prev => ({ ...prev, studentId: '', score: '' })); // keep class, subject, type and assessment for the next student
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to save grade');
         }
@@ -79,8 +96,15 @@ const Gradebook = () => {
 
             {!isStudent && (
                 <div className="glass p-6 rounded-2xl md:rounded-3xl shadow-sm mb-8">
-                    <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Input Grade</h2>
-                    <form onSubmit={handleMark} className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
+                        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Input Grade</h2>
+                        {form.studentGroupId && (
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                                {options.term ? <>Filed under <span className="font-semibold">{options.term.name}</span>. Class work and exam combine into the semester result.</> : 'No current term is set; ask an administrator.'}
+                            </p>
+                        )}
+                    </div>
+                    <form onSubmit={handleMark} className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <select required value={form.studentGroupId} onChange={e => setForm({...form, studentGroupId: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200">
                             <option value="">Select Group</option>
                             {studentGroupsList.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
@@ -89,7 +113,15 @@ const Gradebook = () => {
                             <option value="">Select Student</option>
                             {studentsList.map(s => <option key={s.id} value={s.id}>{s.first_name} {s.last_name} ({s.enrollment_number})</option>)}
                         </select>
-                        <input type="text" placeholder="Assessment Name" required value={form.assessmentName} onChange={e => setForm({...form, assessmentName: e.target.value})} className="col-span-2 px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200" />
+                        <select required aria-label="Subject" value={form.courseId} onChange={e => setForm({...form, courseId: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200">
+                            <option value="">{form.studentGroupId && options.subjects.length === 0 ? 'You teach no subjects to this class' : 'Select Subject'}</option>
+                            {options.subjects.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                        <select required aria-label="Type" value={form.component} onChange={e => setForm({...form, component: e.target.value})} className="px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200">
+                            <option value="CLASS">Class work (quiz, test, assignment)</option>
+                            <option value="EXAM">Examination</option>
+                        </select>
+                        <input type="text" placeholder="Assessment Name (e.g. Quiz 1, Final exam)" required value={form.assessmentName} onChange={e => setForm({...form, assessmentName: e.target.value})} className="md:col-span-2 px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none text-sm font-semibold text-slate-700 dark:text-slate-200" />
                         <div className="flex gap-2 items-center">
                             <input type="number" step="0.01" placeholder="Score" required value={form.score} onChange={e => setForm({...form, score: e.target.value})} className="w-full px-4 py-3 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200" />
                             <span className="font-semibold text-slate-400">/</span>
@@ -123,7 +155,10 @@ const Gradebook = () => {
                                     const percentage = ((rec.score / rec.max_score) * 100).toFixed(1);
                                     return (
                                         <tr key={rec.id} className="hover:bg-primary-50/30 transition-colors">
-                                            <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-100">{rec.assessment_name}</td>
+                                            <td className="px-6 py-4">
+                                                <p className="font-semibold text-slate-800 dark:text-slate-100">{rec.assessment_name}</p>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">{rec.course_name || 'No subject'} · {rec.component === 'EXAM' ? 'Exam' : 'Class work'}{rec.term_name ? ` · ${rec.term_name}` : ''}</p>
+                                            </td>
                                             <td className="px-6 py-4 font-semibold text-slate-500 dark:text-slate-400">{rec.student_group_name}</td>
                                             {!isStudent && <td className="px-6 py-4">{rec.first_name} {rec.last_name}</td>}
                                             <td className="px-6 py-4">{rec.score} / {rec.max_score}</td>

@@ -49,6 +49,16 @@ Every school day at 07:00 (server time; set `TZ`, change with `REMINDER_TIME`) e
 
 To try it with demo data: `npm run seed:scheduler-demo` in `backend` (fills only empty setup, never publishes; refuses to run in production). Existing databases need `backend/upgrades/003-timetable-generator.sql`.
 
+## Semester results
+
+Lecturers record each mark against a subject they teach that class, as **class work** (quizzes, tests, assignments) or the **exam**; marks are filed under the current term. A student's semester statement combines them per subject (class work 30%, exam 70% by default; set per term), applies the grading scale in the `grading_scale` table (A 80-100 = 4.0 … F below 50) and the subject's credit hours, and shows the total, grade, grade point and remark for every subject, the semester and cumulative GPA, the weighted average and attendance.
+
+Students only see a term after a super admin or admin releases it (Performance page). Students open **Semester Results** to view, print or save their statement as PDF; the printout is a clean A4 page. Set `VITE_SCHOOL_NAME` in `frontend/.env` for the name printed at the top. Existing databases need `backend/upgrades/004-semester-results.sql`; `npm run seed:results-demo` adds demo marks for the current term and releases it.
+
+## Realistic demo school
+
+`npm run seed:realistic -- --reset` in `backend` **replaces all school data** (back up first) with EduCore University College: 4 programmes, 14 Level 100-300 classes in Gold/Diamond streams, ~430 students with Ghanaian names, guardians and contacts, 18 lecturers and staff, a timetable built and published by the generator, three semesters (two finished with released results, the current one in progress), daily attendance and staff check-ins, marks, fees and payments in GHS, a library with loans, learning materials and announcements. It is seeded, so it builds the same school every time. Every password is `password123`; try `superadmin@educore.com`, `admin@educore.com`, `headmaster@educore.com`, `accountant@educore.com`, `librarian@educore.com`, `lecturer@educore.com`, `security@educore.com` and `student@educore.com`. Set `VITE_SCHOOL_NAME=EduCore University College` and `VITE_CURRENCY=GHS` in `frontend/.env` to match.
+
 ## Repository structure
 
 - `frontend/src/`: application screens, layout, shared styles and API client

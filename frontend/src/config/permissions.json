@@ -292,5 +292,12 @@
   "page.scheduler": [
     "SUPER_ADMIN",
     "ADMIN"
+  ],
+  "results.own": [
+    "STUDENT"
+  ],
+  "results.release": [
+    "SUPER_ADMIN",
+    "ADMIN"
   ]
 }

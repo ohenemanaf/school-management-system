@@ -1,260 +1,267 @@
-import { useState, useEffect } from 'react';
-import api from '../../utils/api';
-import { 
-    IconReportAnalytics, 
-    IconTrendingUp, 
-    IconTrophy,
-    IconBooks,
-    IconAward
+import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
+import toast from 'react-hot-toast';
+import {
+    IconReportAnalytics, IconTrendingUp, IconTrophy, IconBooks, IconAward, IconPrinter, IconLock,
 } from '@tabler/icons-react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-    LineChart, Line,
-    Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
+    LineChart, Line, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from 'recharts';
+import api from '../../utils/api';
+import { SCHOOL_NAME } from '../../utils/format';
+import ResultStatement from './ResultStatement';
+import AssessmentsBySubject from './AssessmentsBySubject';
+
+// A student's results for a term: progress analytics from every mark so far,
+// and the official report card (once the school releases the term), which
+// prints as a clean A4 page together with a performance summary.
+
+const DEFAULT_SCALE = [
+    { minScore: 80, grade: 'A' }, { minScore: 70, grade: 'B' }, { minScore: 60, grade: 'C' },
+    { minScore: 50, grade: 'D' }, { minScore: 0, grade: 'F' },
+];
+const gradeFor = (pct, scale) => (scale.find((s) => pct >= s.minScore) || scale[scale.length - 1]).grade;
+const shortLabel = (text, max = 14) => (text.length > max ? `${text.slice(0, max - 1)}…` : text);
+const axisTick = { fill: 'var(--viz-text-secondary)', fontSize: 12 };
+const tooltipStyle = { borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' };
+
+function useIsNarrow() {
+    const query = '(max-width: 640px)';
+    const [narrow, setNarrow] = useState(() => window.matchMedia(query).matches);
+    useEffect(() => {
+        const mq = window.matchMedia(query);
+        const onChange = () => setNarrow(mq.matches);
+        mq.addEventListener('change', onChange);
+        return () => mq.removeEventListener('change', onChange);
+    }, []);
+    return narrow;
+}
+
+const Card = ({ title, accent, className = '', children }) => (
+    <section className={`glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-4 sm:p-6 min-w-0 ${className}`}>
+        <h3 className="text-base sm:text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4 sm:mb-6 flex items-center gap-2">
+            <span className={`w-2 h-6 rounded-full ${accent}`} />
+            {title}
+        </h3>
+        {children}
+    </section>
+);
+
+const Kpi = ({ icon, gradient, value, label, small, className = '' }) => (
+    <div className={`glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 relative overflow-hidden min-w-0 ${className}`}>
+        <div className={`absolute right-0 top-0 w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br ${gradient} opacity-10 rounded-bl-full`} />
+        <div className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center mb-2 sm:mb-3 shadow-lg`}>{icon}</div>
+        <p className={`${small ? 'text-lg sm:text-xl' : 'text-2xl sm:text-4xl'} font-semibold text-slate-800 dark:text-slate-100 mb-1 truncate`} title={typeof value === 'string' ? value : undefined}>{value}</p>
+        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{label}</span>
+    </div>
+);
 
 const StudentResults = () => {
+    const narrow = useIsNarrow();
+    const [terms, setTerms] = useState(null);
+    const [termId, setTermId] = useState('');
     const [grades, setGrades] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [scale, setScale] = useState(DEFAULT_SCALE);
+    const [statement, setStatement] = useState(null);
+    const [cardState, setCardState] = useState('loading'); // loading | ready | not-released | none
+    const [showBreakdown, setShowBreakdown] = useState(false);
 
     useEffect(() => {
-        const fetchGrades = async () => {
-            try {
-                const response = await api.get('/grades');
-                setGrades(response.data);
-            } catch (error) {
-                console.error('Failed to fetch grades:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchGrades();
+        api.get('/results/terms').then(({ data }) => {
+            setTerms(data);
+            const first = data.find((t) => t.results_released && t.graded > 0) || data.find((t) => t.graded > 0) || data[0];
+            if (first) setTermId(String(first.id));
+            else setCardState('none');
+        }).catch(() => { setTerms([]); setCardState('none'); toast.error('Could not load your terms'); });
+        api.get('/grades').then(({ data }) => setGrades(data)).catch(() => toast.error('Could not load your marks'));
+        api.get('/results/scale').then(({ data }) => { if (data.length) setScale(data); }).catch(() => {});
     }, []);
 
-    if (loading) {
+    useEffect(() => {
+        if (!termId) return;
+        setCardState('loading');
+        setStatement(null);
+        api.get('/results/statement', { params: { term_id: termId } })
+            .then(({ data }) => { setStatement(data); setCardState('ready'); })
+            .catch((error) => setCardState(error.response?.data?.code === 'NOT_RELEASED' ? 'not-released' : 'none'));
+    }, [termId]);
+
+    // --- Analytics for the selected term ---------------------------------
+    const analytics = useMemo(() => {
+        const inTerm = grades.filter((g) => !termId || String(g.term_id) === termId);
+        const processed = inTerm.map((g) => ({
+            ...g,
+            subject: g.course_name || 'Other assessments',
+            label: g.course_code || g.course_name || 'Other',
+            percentage: (Number(g.score) / Number(g.max_score)) * 100,
+            date: new Date(g.created_at),
+        }));
+        // Subject charts and "best subject" use marks filed under a subject only.
+        const bySubject = new Map();
+        for (const g of processed.filter((x) => x.course_name)) {
+            if (!bySubject.has(g.subject)) bySubject.set(g.subject, { subject: g.subject, label: g.label, total: 0, count: 0 });
+            const s = bySubject.get(g.subject);
+            s.total += g.percentage;
+            s.count += 1;
+        }
+        const subjects = [...bySubject.values()].map((s) => ({ subject: s.subject, label: s.label, average: Number((s.total / s.count).toFixed(1)), fullMark: 100 }));
+        const best = subjects.reduce((top, s) => (!top || s.average > top.average ? s : top), null);
+        const average = processed.length ? processed.reduce((sum, g) => sum + g.percentage, 0) / processed.length : null;
+        const trend = [...processed].sort((a, b) => a.date - b.date).map((g) => ({ name: g.assessment_name, score: Number(g.percentage.toFixed(1)), subject: g.subject }));
+        return { processed, subjects, best, average, trend };
+    }, [grades, termId]);
+
+    const selected = terms?.find((t) => String(t.id) === termId);
+    const canPrint = cardState === 'ready' && statement;
+    const { processed, subjects, best, average, trend } = analytics;
+
+    if (terms === null) {
         return (
-        <div className="page flex justify-center items-center h-full min-h-[400px]">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+            <div className="page flex justify-center items-center h-full min-h-[400px]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500" />
             </div>
         );
     }
 
-    // --- Data Processing ---
-    // 1. Map to raw percentages
-    const processedGrades = grades.map(g => ({
-        ...g,
-        percentage: (Number(g.score) / Number(g.max_score)) * 100,
-        dateObj: new Date(g.created_at)
-    }));
-
-    // 2. Compute Overall Stats
-    const totalAssessments = processedGrades.length;
-    const overallAverage = totalAssessments > 0 
-        ? processedGrades.reduce((acc, curr) => acc + curr.percentage, 0) / totalAssessments 
-        : 0;
-
-    // 3. Subject Averages (For Bar Chart & Radar & Best Subject)
-    const subjectMap = {};
-    processedGrades.forEach(g => {
-        if (!subjectMap[g.class_name]) {
-            subjectMap[g.class_name] = { totalPercentage: 0, count: 0 };
-        }
-        subjectMap[g.class_name].totalPercentage += g.percentage;
-        subjectMap[g.class_name].count += 1;
-    });
-
-    const subjectData = Object.keys(subjectMap).map(subject => ({
-        subject,
-        average: Number((subjectMap[subject].totalPercentage / subjectMap[subject].count).toFixed(2)),
-        fullMark: 100
-    }));
-
-    // Find Best Subject
-    let bestSubject = { name: 'N/A', average: 0 };
-    subjectData.forEach(sub => {
-        if (sub.average > bestSubject.average) {
-            bestSubject = { name: sub.subject, average: sub.average };
-        }
-    });
-
-    // 4. Trend over time (Line Chart)
-    // Sort chronological
-    const trendData = [...processedGrades]
-        .sort((a, b) => a.dateObj - b.dateObj)
-        .map(g => ({
-            name: g.assessment_name,
-            score: Number(g.percentage.toFixed(2)),
-            subject: g.class_name
-        }));
+    const printButton = (
+        <button type="button" disabled={!canPrint} onClick={() => window.print()}
+            title={canPrint ? 'Print or save as PDF' : 'Available once the school releases this term'}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
+            <IconPrinter size={18} /> Print report card
+        </button>
+    );
 
     return (
-        <div className="page space-y-8">
+        <div className="page space-y-6 sm:space-y-8">
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-semibold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">
-                    <IconReportAnalytics size={36} className="text-primary-600" />
-                    My Results & Analysis
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Track your academic progress and analytical performance.</p>
-            </div>
-
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6 relative overflow-hidden group">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-primary-500 to-indigo-400 opacity-10 rounded-bl-full transition-transform group-hover:scale-110"></div>
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-indigo-400 text-white flex items-center justify-center mb-4 shadow-lg">
-                        <IconTrendingUp size={24} />
-                    </div>
-                    <p className="text-4xl font-semibold text-slate-800 dark:text-slate-100 mb-1">
-                        {totalAssessments > 0 ? overallAverage.toFixed(1) : '--'}%
-                    </p>
-                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Overall Average</span>
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+                <div className="min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-semibold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">
+                        <IconReportAnalytics size={32} className="text-primary-600 shrink-0" />
+                        My Results &amp; Report Card
+                    </h1>
+                    <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-2 font-medium">Track your progress, then print your report card when the term is released.</p>
                 </div>
-
-                <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6 relative overflow-hidden group">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-emerald-500 to-teal-400 opacity-10 rounded-bl-full transition-transform group-hover:scale-110"></div>
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-400 text-white flex items-center justify-center mb-4 shadow-lg">
-                        <IconTrophy size={24} />
-                    </div>
-                    <p className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-1 truncate">
-                        {bestSubject.name}
-                    </p>
-                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Best Subject ({bestSubject.average.toFixed(1)}%)</span>
-                </div>
-
-                <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6 relative overflow-hidden group">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-amber-500 to-orange-400 opacity-10 rounded-bl-full transition-transform group-hover:scale-110"></div>
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-400 text-white flex items-center justify-center mb-4 shadow-lg">
-                        <IconBooks size={24} />
-                    </div>
-                    <p className="text-4xl font-semibold text-slate-800 dark:text-slate-100 mb-1">
-                        {totalAssessments}
-                    </p>
-                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Assessments</span>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full lg:w-auto">
+                    {terms.length > 0 && (
+                        <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                            Term
+                            <select value={termId} onChange={(e) => setTermId(e.target.value)} className="flex-1 sm:flex-none min-w-0 px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100">
+                                {terms.map((t) => <option key={t.id} value={t.id}>{t.name}{t.results_released ? '' : ' (not released)'}</option>)}
+                            </select>
+                        </label>
+                    )}
+                    {printButton}
                 </div>
             </div>
 
-            {totalAssessments === 0 ? (
-                <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 rounded-3xl p-12 text-center shadow-sm">
+            {/* KPI cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6">
+                <Kpi icon={<IconTrendingUp size={20} />} gradient="from-primary-500 to-indigo-400" value={average === null ? '--' : `${average.toFixed(1)}%`} label="Overall average" />
+                <Kpi icon={<IconBooks size={20} />} gradient="from-amber-500 to-orange-400" value={processed.length} label="Assessments" className="sm:order-last" />
+                <Kpi icon={<IconTrophy size={20} />} gradient="from-emerald-500 to-teal-400" value={best ? best.subject : 'N/A'} label={`Best subject${best ? ` (${best.average.toFixed(1)}%)` : ''}`} small className="col-span-2 sm:col-span-1" />
+            </div>
+
+            {processed.length === 0 ? (
+                <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 rounded-3xl p-8 sm:p-12 text-center shadow-sm">
                     <IconAward size={48} className="mx-auto text-slate-300 mb-4" />
-                    <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200">No Results Found</h2>
-                    <p className="text-slate-500 dark:text-slate-400 mt-2">Your grades will appear here and graphs will automatically generate once your lecturers publish your results.</p>
+                    <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200">No marks yet{selected ? ` for ${selected.name}` : ''}</h2>
+                    <p className="text-slate-500 dark:text-slate-400 mt-2">Your marks appear here, with graphs, as your lecturers enter them.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    
-                    {/* Performance Trend (Line Chart) */}
-                    <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6 lg:col-span-2">
-                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-                            <span className="w-2 h-6 bg-primary-500 rounded-full"></span>
-                            Performance Trend
-                        </h3>
-                        <div className="h-80 w-full">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+                    <Card title="Performance trend" accent="bg-primary-500" className="lg:col-span-2">
+                        <div className="h-64 sm:h-80 w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={trendData} margin={{ top: 5, right: 30, left: -20, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
-                                    <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                                    <RechartsTooltip 
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                        formatter={(value, name, props) => [`${value}%`, props.payload.subject]}
-                                    />
-                                    <Line type="monotone" dataKey="score" stroke="#6366f1" strokeWidth={4} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 8, strokeWidth: 0 }} />
+                                <LineChart data={trend} margin={{ top: 5, right: narrow ? 8 : 30, left: -20, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--viz-grid)" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={narrow || trend.length > 12 ? false : axisTick} dy={10} height={narrow || trend.length > 12 ? 8 : 30} />
+                                    <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={axisTick} />
+                                    <RechartsTooltip contentStyle={tooltipStyle} formatter={(value, name, props) => [`${value}%`, props.payload.subject]} />
+                                    <Line type="monotone" dataKey="score" stroke="#6366f1" strokeWidth={narrow ? 3 : 4} dot={{ r: narrow ? 3 : 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 7, strokeWidth: 0 }} />
                                 </LineChart>
                             </ResponsiveContainer>
                         </div>
-                    </div>
+                    </Card>
 
-                    {/* Subject Proficiency (Bar Chart) */}
-                    <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6">
-                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2">
-                            <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
-                            Subject Averages
-                        </h3>
-                        <div className="h-72 w-full">
+                    <Card title="Subject averages" accent="bg-emerald-500">
+                        <div className="w-full" style={{ height: Math.max(220, subjects.length * 44 + 40) }}>
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={subjectData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }} layout="vertical">
-                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-                                    <XAxis type="number" domain={[0, 100]} axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                                    <YAxis type="category" dataKey="subject" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} width={100} />
-                                    <RechartsTooltip 
-                                        cursor={{fill: '#f8fafc'}}
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                        formatter={(value) => [`${value}%`, 'Average']}
-                                    />
-                                    <Bar dataKey="average" fill="#10b981" radius={[0, 6, 6, 0]} barSize={24} />
+                                <BarChart data={subjects} margin={{ top: 5, right: 10, left: -10, bottom: 5 }} layout="vertical">
+                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--viz-grid)" />
+                                    <XAxis type="number" domain={[0, 100]} axisLine={false} tickLine={false} tick={axisTick} />
+                                    <YAxis type="category" dataKey={narrow ? 'label' : 'subject'} axisLine={false} tickLine={false} tick={{ ...axisTick, fontSize: 11 }} width={narrow ? 64 : 120} tickFormatter={(v) => shortLabel(String(v), narrow ? 9 : 18)} />
+                                    <RechartsTooltip cursor={{ fill: 'var(--viz-hover)' }} contentStyle={tooltipStyle} formatter={(value) => [`${value}%`, 'Average']} labelFormatter={(_, payload) => payload?.[0]?.payload.subject} />
+                                    <Bar dataKey="average" fill="#10b981" radius={[0, 6, 6, 0]} barSize={narrow ? 18 : 24} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
-                    </div>
+                    </Card>
 
-                    {/* Cognitive Mapping (Radar Chart) */}
-                    <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6">
-                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
-                            <span className="w-2 h-6 bg-amber-500 rounded-full"></span>
-                            Skill Mapping
-                        </h3>
-                        <div className="h-72 w-full flex items-center justify-center">
-                            {subjectData.length >= 3 ? (
+                    <Card title="Skill mapping" accent="bg-amber-500">
+                        <div className="h-64 sm:h-72 w-full flex items-center justify-center">
+                            {subjects.length >= 3 ? (
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={subjectData}>
-                                        <PolarGrid stroke="#e2e8f0" />
-                                        <PolarAngleAxis dataKey="subject" tick={{fill: '#64748b', fontSize: 11, fontWeight: 'bold'}} />
+                                    <RadarChart cx="50%" cy="50%" outerRadius={narrow ? '62%' : '70%'} data={subjects}>
+                                        <PolarGrid stroke="var(--viz-grid)" />
+                                        <PolarAngleAxis dataKey="label" tick={{ fill: 'var(--viz-text-secondary)', fontSize: narrow ? 10 : 11, fontWeight: 'bold' }} />
                                         <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                                        <Radar name="Student" dataKey="average" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.4} />
-                                        <RechartsTooltip formatter={(value) => [`${value}%`, 'Proficiency']} />
+                                        <Radar name="You" dataKey="average" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.4} />
+                                        <RechartsTooltip formatter={(value) => [`${value}%`, 'Average']} labelFormatter={(_, payload) => payload?.[0]?.payload.subject} />
                                     </RadarChart>
                                 </ResponsiveContainer>
                             ) : (
-                                <p className="text-slate-400 text-sm font-medium text-center px-4">Need grades in at least 3 subjects to map cognitive radar.</p>
+                                <p className="text-slate-400 text-sm font-medium text-center px-4">Marks in at least 3 subjects are needed for the skill map.</p>
                             )}
                         </div>
-                    </div>
+                    </Card>
 
-                    {/* Detailed Grades Table */}
-                    <div className="glass bg-white dark:bg-slate-800/70 border border-white dark:border-slate-700/50 shadow-sm rounded-3xl p-6 lg:col-span-2 overflow-hidden flex flex-col">
-                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-6 flex items-center gap-2 shrink-0">
-                            <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
-                            Recent Assessments
-                        </h3>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
-                                        <th className="px-6 py-4 rounded-tl-xl">Assessment</th>
-                                        <th className="px-6 py-4">Subject</th>
-                                        <th className="px-6 py-4">Date</th>
-                                        <th className="px-6 py-4 text-right">Score</th>
-                                        <th className="px-6 py-4 text-right rounded-tr-xl">Grade</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100/50 text-sm font-medium text-slate-700 dark:text-slate-200">
-                                    {processedGrades.map(g => (
-                                        <tr key={g.id} className="hover:bg-blue-50/30 transition-colors">
-                                            <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-100">{g.assessment_name}</td>
-                                            <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{g.class_name}</td>
-                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{g.dateObj.toLocaleDateString()}</td>
-                                            <td className="px-6 py-4 text-right font-semibold">
-                                                {g.score} <span className="text-slate-400 text-xs font-normal">/ {g.max_score}</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                                    g.percentage >= 80 ? 'bg-emerald-100 text-emerald-700' :
-                                                    g.percentage >= 60 ? 'bg-blue-100 text-blue-700' :
-                                                    g.percentage >= 40 ? 'bg-amber-100 text-amber-700' :
-                                                    'bg-red-100 text-red-700'
-                                                }`}>
-                                                    {g.percentage >= 80 ? 'A' : g.percentage >= 60 ? 'B' : g.percentage >= 40 ? 'C' : 'F'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    <Card title="All assessments by subject" accent="bg-blue-500" className="lg:col-span-2">
+                        <AssessmentsBySubject marks={processed} gradeFor={(pct) => gradeFor(pct, scale)} finals={new Map((statement?.rows || []).map((r) => [r.name, r]))} />
+                    </Card>
                 </div>
             )}
+
+            {/* Report card */}
+            <section className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <span className="w-2 h-6 rounded-full bg-slate-700 dark:bg-slate-300" /> Report card
+                    </h2>
+                    {canPrint && (
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                                <input type="checkbox" checked={showBreakdown} onChange={(e) => setShowBreakdown(e.target.checked)} />
+                                Include each assessment
+                            </label>
+                            {printButton}
+                        </div>
+                    )}
+                </div>
+
+                {cardState === 'loading' ? (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Loading…</p>
+                ) : cardState === 'not-released' ? (
+                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 sm:p-6 shadow-sm">
+                        <p className="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2"><IconLock size={18} className="text-slate-400" />{selected?.name || 'This term'}: report card not released yet</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Your report card (grades, GPA and the printable copy) appears as soon as the school releases this term. Your marks above are already up to date.</p>
+                    </div>
+                ) : canPrint ? (
+                    <>
+                        <ResultStatement data={statement} schoolName={SCHOOL_NAME} showBreakdown={showBreakdown} responsive />
+                        {/* Printed copy, outside the app layout so menus never print. */}
+                        {createPortal(
+                            <div className="print-only">
+                                <ResultStatement data={statement} schoolName={SCHOOL_NAME} showBreakdown={showBreakdown} printSummary />
+                            </div>,
+                            document.body
+                        )}
+                    </>
+                ) : (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">No report card for this term.</p>
+                )}
+            </section>
         </div>
     );
 };
