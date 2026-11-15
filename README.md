@@ -1,6 +1,53 @@
+<div align="center">
+
 # School Management System
 
-A role-based school administration app built with React, Vite and Tailwind CSS, backed by Express and MySQL. Includes student and lecturer management, programs, courses, groups, rooms, timetables, attendance, grades, materials, finance, library and notifications.
+**One system for running a school or college: students, staff, timetables, attendance, results, fees and the library.**
+
+![React](https://img.shields.io/badge/React-Vite-149ECA?logo=react&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-UI-06B6D4?logo=tailwindcss&logoColor=white)
+![Express](https://img.shields.io/badge/Express-API-000000?logo=express&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+
+</div>
+
+## What it does
+
+| Area | Features |
+|---|---|
+| **People** | Students, lecturers and staff, with CSV import, guardians and contacts. New accounts must set their own password at first login. |
+| **Academics** | Programmes, courses, classes and streams, groups, rooms and learning materials |
+| **Timetables** | A generator that builds a clash-free timetable: no class, teacher or room is double-booked, teacher limits are respected, heavy subjects go in the morning, and subjects are spread across the week. It reports anything it couldn't place, then publishes the result. |
+| **Attendance** | Daily student attendance and staff check-ins at the gate |
+| **Results** | Class work and exam marks feed semester statements with grades, GPA, cumulative GPA and attendance, printable as A4 PDFs. Students see a semester only after it is released. |
+| **Finance** | Fees, payments and expenses in the school's own currency; students see their own balance |
+| **Library** | Books and loans |
+| **Communication** | Announcements, notifications and email reminders before exams |
+
+### Roles
+
+Each person sees only what their role allows. The server enforces this on every request.
+
+| Role | What they can do |
+|---|---|
+| Super admin | Everything, including creating accounts and changing roles or account status |
+| Admin | Run the school: students, classes, timetables, attendance and releasing results |
+| Headmaster | Read-only overview and analytics across the school |
+| Lecturer | Their classes, attendance, marks and materials; check in at the gate |
+| Accountant | Fees, payments and expenses |
+| Librarian | Books, loans and class reading lists |
+| Gatekeeper | Generates the codes that staff use to check in |
+| Student | Their own timetable, materials, attendance, fees and released results |
+
+### Try it with a realistic school
+
+`npm run seed:realistic -- --reset` builds **EduCore University College** in a database with a single command. It has:
+- about 430 students and 18 staff
+- a published timetable and three semesters of results
+- fees, library loans and announcements
+
+The details are under [Realistic demo school](#realistic-demo-school).
 
 ## Simple deployment
 
